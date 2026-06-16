@@ -7,6 +7,8 @@ candidate_images:
   fiori: https://data.csail.mit.edu/graphics/fivek/img/tiff16_a/a0088-_DGW6376.tif
   bracciali: https://data.csail.mit.edu/graphics/fivek/img/tiff16_a/a0112-kme_093.tif
   ragazzi: https://data.csail.mit.edu/graphics/fivek/img/tiff16_a/a0230-_DSC0126.tif
+  tramonto_mare: https://unsplash.com/photos/JE01L3hB0GQ/download?force=true&w=1920
+  tramonto_lago: https://unsplash.com/photos/qkfxBc2NQ18/download?force=true&w=1920
 
 # Sottoinsieme scelto per Flux e LUT.
 # I livelli L1-L4 vengono calcolati da utils/data/quality.py e salvati in images/classification.csv.
@@ -17,6 +19,8 @@ selected_images:
   - ragazzi
   - citta
   - bracciali
+  - tramonto_mare
+  - tramonto_lago
 
 # Batch Flux di default. I prompt sono definiti in configs/prompts.yaml.
 run_type: targets

@@ -239,7 +239,10 @@ def read_classification_levels(classification_path: Path) -> dict[str, str]:
             suggested_level = row.get("suggested_level")
             if not file_name or not suggested_level:
                 continue
-            levels[Path(file_name).stem] = compact_level(suggested_level)
+            try:
+                levels[Path(file_name).stem] = compact_level(suggested_level)
+            except ValueError:
+                continue
     return levels
 
 

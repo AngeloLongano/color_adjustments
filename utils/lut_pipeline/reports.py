@@ -5,16 +5,40 @@ import pandas as pd
 from PIL import Image, ImageDraw, ImageFont
 
 from utils.common.image_io import load_rgb
-from utils.lut_pipeline.lut import make_lut_summary_image
+from utils.lut_pipeline.lut import make_best_lut_summary_image, make_lut17_method_grid
+
+
+def _read_summary(path: Path) -> pd.DataFrame:
+    summary = pd.read_csv(path)
+    if "fit_method" not in summary.columns:
+        summary["fit_method"] = "mean"
+    if "apply_method" not in summary.columns:
+        summary["apply_method"] = "trilinear"
+    if "variant" not in summary.columns:
+        summary["variant"] = summary.apply(
+            lambda row: (
+                f"lut_{int(row['lut_size'])}_"
+                f"{row['fit_method']}_{row['apply_method']}"
+            ),
+            axis=1,
+        )
+    if "best_summary_path" not in summary.columns:
+        summary["best_summary_path"] = summary["summary_path"].apply(
+            lambda path: str(Path(path).with_name("best_summary.png"))
+        )
+    return summary
 
 
 def write_lut_rankings(summary_path: Path, output_dir: Path) -> None:
-    summary = pd.read_csv(summary_path)
+    summary = _read_summary(summary_path)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     cols = [
         "image_id",
         "prompt_id",
+        "variant",
+        "fit_method",
+        "apply_method",
         "lut_size",
         "rgb_psnr",
         "luma_ssim",
@@ -22,6 +46,7 @@ def write_lut_rankings(summary_path: Path, output_dir: Path) -> None:
         "delta_e_p95",
         "occupied_ratio",
         "summary_path",
+        "best_summary_path",
         "reconstruction_path",
         "heatmap_path",
     ]
@@ -38,6 +63,13 @@ def write_lut_rankings(summary_path: Path, output_dir: Path) -> None:
         .groupby(["image_id", "prompt_id"])
         .head(1)[cols]
     )
+    by_variant = (
+        summary.groupby(["lut_size", "fit_method", "apply_method"])[
+            ["rgb_psnr", "luma_ssim", "delta_e_mean", "delta_e_p95", "occupied_ratio"]
+        ]
+        .mean()
+        .reset_index()
+    )
     by_lut_size = (
         summary.groupby("lut_size")[
             ["rgb_psnr", "luma_ssim", "delta_e_mean", "delta_e_p95", "occupied_ratio"]
@@ -48,23 +80,22 @@ def write_lut_rankings(summary_path: Path, output_dir: Path) -> None:
 
     best_delta_e.to_csv(output_dir / "best_by_delta_e.csv", index=False)
     best_psnr.to_csv(output_dir / "best_by_psnr.csv", index=False)
+    by_variant.to_csv(output_dir / "metrics_by_variant.csv", index=False)
     by_lut_size.to_csv(output_dir / "metrics_by_lut_size.csv", index=False)
 
 
 def generate_contact_sheets(
     summary_path: Path,
     output_dir: Path,
-    lut_sizes: tuple[int, ...] = (17, 33, 65),
     thumb_size: tuple[int, int] = (240, 160),
 ) -> None:
-    summary = pd.read_csv(summary_path)
+    summary = _read_summary(summary_path)
     output_dir.mkdir(parents=True, exist_ok=True)
     font = ImageFont.load_default()
     thumb_w, thumb_h = thumb_size
-    label_h = 24
+    label_h = 42
     pad = 8
-    heatmap_lut = lut_sizes[-1]
-    cols = ["original", "flux_target", *[f"lut_{size}" for size in lut_sizes], f"error_{heatmap_lut}"]
+    cols = ["original", "flux_target", "best_lut", "best_error"]
 
     for image_id, group in summary.groupby("image_id"):
         prompts = sorted(group["prompt_id"].unique())
@@ -79,9 +110,8 @@ def generate_contact_sheets(
 
         for ri, prompt_id in enumerate(prompts):
             row = group[group["prompt_id"] == prompt_id]
-            by_size = {int(item["lut_size"]): item for _, item in row.iterrows()}
+            best = row.sort_values("delta_e_mean").iloc[0]
             first = row.iloc[0]
-            heatmap_row = by_size[heatmap_lut]
             base_dir = Path(first["reconstruction_path"]).parent
             paths = {
                 "original": _first_existing_path(
@@ -90,13 +120,16 @@ def generate_contact_sheets(
                 "flux_target": _first_existing_path(
                     first, "flux_target_copy_path", base_dir / "flux_target.png", base_dir / "target.png"
                 ),
-                f"error_{heatmap_lut}": Path(heatmap_row["heatmap_path"]),
+                "best_lut": Path(best["reconstruction_path"]),
+                "best_error": Path(best["heatmap_path"]),
             }
-            for size in lut_sizes:
-                paths[f"lut_{size}"] = Path(by_size[size]["reconstruction_path"])
 
             y = pad + label_h + ri * (thumb_h + label_h + pad)
-            draw.text((pad, y), prompt_id, fill=(0, 0, 0), font=font)
+            best_label = (
+                f"{prompt_id} | best dE {best['delta_e_mean']} | "
+                f"{best['variant']}"
+            )
+            draw.text((pad, y), best_label, fill=(0, 0, 0), font=font)
 
             for ci, col in enumerate(cols):
                 x = pad + ci * (thumb_w + pad)
@@ -135,9 +168,9 @@ def _first_existing_path(row: pd.Series, column: str, *fallbacks: Path) -> Path:
 
 
 def generate_case_summaries(summary_path: Path) -> None:
-    summary = pd.read_csv(summary_path)
+    summary = _read_summary(summary_path)
     for (image_id, prompt_id), group in summary.groupby(["image_id", "prompt_id"]):
-        group = group.sort_values("lut_size")
+        group = group.sort_values(["lut_size", "fit_method", "apply_method"])
         first = group.iloc[0]
         base_dir = Path(first["reconstruction_path"]).parent
 
@@ -149,6 +182,9 @@ def generate_case_summaries(summary_path: Path) -> None:
         )
         summary_output = _first_existing_path(
             first, "summary_path", base_dir / "summary.png"
+        )
+        best_summary_output = Path(
+            first.get("best_summary_path", base_dir / "best_summary.png")
         )
 
         results = []
@@ -164,19 +200,31 @@ def generate_case_summaries(summary_path: Path) -> None:
             results.append(
                 {
                     "lut_size": int(row["lut_size"]),
+                    "fit_method": row["fit_method"],
+                    "apply_method": row["apply_method"],
+                    "variant": row["variant"],
                     "reconstruction": load_rgb(Path(row["reconstruction_path"])),
                     "heatmap": load_rgb(Path(row["heatmap_path"])),
                     "metrics": metrics,
                 }
             )
 
-        make_lut_summary_image(
+        make_lut17_method_grid(
             original=load_rgb(original_path),
             target=load_rgb(target_path),
             results=results,
             output_path=summary_output,
             title=f"LUT vs FLUX - {image_id} / {prompt_id}",
-            subtitle="Confronto tra target diffusion e ricostruzioni ottenute con LUT globali.",
+            subtitle="LUT 17: confronto tra metodi di fitting e applicazione.",
+        )
+        best_result = min(results, key=lambda result: result["metrics"]["delta_e_mean"])
+        make_best_lut_summary_image(
+            original=load_rgb(original_path),
+            target=load_rgb(target_path),
+            result=best_result,
+            output_path=best_summary_output,
+            title=f"Best LUT - {image_id} / {prompt_id}",
+            subtitle="Migliore variante selezionata per Delta E medio.",
         )
 
 
@@ -209,3 +257,7 @@ def main() -> None:
     generate_contact_sheets(args.summary, args.contact_sheet_dir)
     print(f"Reports written to: {args.output_dir}")
     print(f"Contact sheets written to: {args.contact_sheet_dir}")
+
+
+if __name__ == "__main__":
+    main()

@@ -316,6 +316,12 @@ def classify_candidate(color_score, entropy_norm, dominant_conc, edge_dens, text
         and dominant_conc <= 55
         and edge_dens < 0.09
         and texture < 0.065
+    ) or (
+        color_score >= 400
+        and entropy_norm >= 0.38
+        and dominant_conc <= 55
+        and edge_dens < 0.03
+        and texture < 0.035
     ):
         return "L2_candidate"
 

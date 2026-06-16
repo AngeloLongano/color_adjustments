@@ -8,7 +8,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from utils.common.image_io import read_json
-from utils.lut_pipeline.lut import run_experiment
+from utils.lut_pipeline.lut import DEFAULT_APPLY_METHODS, DEFAULT_FIT_METHODS, run_experiment
 
 
 def find_original(target_path: Path, metadata: dict, originals_dir: Path) -> Path:
@@ -74,6 +74,8 @@ def parse_args() -> argparse.Namespace:
         default=Path("images_lut"),
     )
     parser.add_argument("--lut-sizes", type=int, nargs="+", default=[17, 33, 65])
+    parser.add_argument("--fit-methods", nargs="+", default=DEFAULT_FIT_METHODS)
+    parser.add_argument("--apply-methods", nargs="+", default=DEFAULT_APPLY_METHODS)
     parser.add_argument("--sample-count", type=int, default=200000)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument(
@@ -110,6 +112,8 @@ def main() -> None:
             sample_count=args.sample_count,
             seed=args.seed,
             save_arrays=args.save_arrays,
+            fit_methods=args.fit_methods,
+            apply_methods=args.apply_methods,
         )
 
         for row in rows:
@@ -124,3 +128,7 @@ def main() -> None:
 
     write_summary(args.summary, all_rows)
     print(f"Summary written to: {args.summary}")
+
+
+if __name__ == "__main__":
+    main()
