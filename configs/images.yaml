@@ -1,0 +1,31 @@
+# Immagini candidate MIT-Adobe FiveK.
+# La chiave e' il nome locale usato dalla pipeline.
+candidate_images:
+  roccia: https://data.csail.mit.edu/graphics/fivek/img/tiff16_a/a0001-jmac_DSC1459.tif
+  foglia: https://data.csail.mit.edu/graphics/fivek/img/tiff16_a/a0118-20051223_103622__MG_0617.tif
+  citta: https://data.csail.mit.edu/graphics/fivek/img/tiff16_a/a0035-dgw_048.tif
+  fiori: https://data.csail.mit.edu/graphics/fivek/img/tiff16_a/a0088-_DGW6376.tif
+  bracciali: https://data.csail.mit.edu/graphics/fivek/img/tiff16_a/a0112-kme_093.tif
+  ragazzi: https://data.csail.mit.edu/graphics/fivek/img/tiff16_a/a0230-_DSC0126.tif
+
+# Sottoinsieme scelto per Flux e LUT.
+# I livelli L1-L4 vengono calcolati da utils/data/quality.py e salvati in images/classification.csv.
+selected_images:
+  - foglia
+  - roccia
+  - fiori
+  - ragazzi
+  - citta
+  - bracciali
+
+# Batch Flux di default. I prompt sono definiti in configs/prompts.yaml.
+run_type: targets
+models:
+  # - flux-klein-4b
+  - flux-klein-4b-base
+
+prompts:
+  - p01_warm_cinematic
+  - p02_teal_orange
+  - p03_cold_winter_grade
+  - p04_faded_matte

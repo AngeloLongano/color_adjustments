@@ -1,0 +1,20 @@
+# Prompt di color grading globale: devono preservare struttura e oggetti.
+p01_warm_cinematic: >-
+  same photograph, preserve exact scene structure and object shapes,
+  warm cinematic color grading, golden highlights, slightly warm shadows,
+  natural realistic colors, no new objects, no texture changes
+
+p02_teal_orange: >-
+  same photograph, preserve exact scene structure and object shapes,
+  cinematic teal and orange color grade, cool teal shadows, warm orange highlights,
+  realistic photography, no new objects, no texture changes
+
+p03_cold_winter_grade: >-
+  same photograph, preserve exact scene structure and object shapes,
+  cold winter color grading, cool blue shadows, desaturated colors,
+  crisp atmosphere, realistic photography, no snow, no new objects, no texture changes
+
+p04_faded_matte: >-
+  same photograph, preserve exact scene structure and object shapes,
+  faded matte film color grade, muted saturation, soft contrast,
+  slightly lifted shadows, realistic photography, no new objects, no texture changes

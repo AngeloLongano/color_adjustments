@@ -1,0 +1,31 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.DS_Store
+
+# Virtual environments
+.venv
+
+# Images assets
+downloads/
+images/
+images_flux/
+images_lut/
+
+# Flux model
+flux_model/
+
+# Agent files
+.codex/
+AGENTS.md
+
+# Old specs
+docs/
+
+# Old experiment assets
+old/
+
