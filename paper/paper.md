@@ -80,14 +80,16 @@ state stimate più 3D LUT con dimensioni, metodi di fitting e interpolazioni
 diverse. Le LUT sono state applicate all'immagine originale e la ricostruzione
 è stata confrontata con il target FLUX.
 
-Il confronto usa metriche sia per caratterizzare immagini e target, sia per
-valutare le ricostruzioni: PSNR RGB, SSIM semplificata su luminanza, Delta E
-CIE76 e copertura della griglia LUT. I risultati mostrano che una LUT stimata
-caso per caso approssima bene i target in cui FLUX applica prevalentemente un
-color grading globale. La qualità peggiora quando il modello modifica texture,
-dettagli locali, materiali o regioni semanticamente distinte. In media la
-variante migliore per Delta E è `65^3 weighted_mean trilinear`, mentre `33^3`
-risulta un compromesso più robusto tra accuratezza e copertura della griglia.
+Il confronto usa metriche in punti diversi della pipeline: selezione delle
+immagini, controllo dei target FLUX e valutazione finale delle ricostruzioni
+LUT. Le metriche principali sono PSNR RGB, un indice SSIM-like globale su
+luminanza, Delta E CIE76 e copertura della griglia LUT. I risultati mostrano
+che una LUT stimata caso per caso approssima bene i target in cui FLUX applica
+prevalentemente un color grading globale. La qualità peggiora quando il modello
+modifica texture, dettagli locali, materiali o regioni semanticamente distinte.
+In media la variante migliore per Delta E è `65^3 weighted_mean trilinear`,
+mentre `33^3` risulta un compromesso più robusto tra accuratezza e copertura
+della griglia.
 
 # Introduzione
 
@@ -129,8 +131,10 @@ semantica non rappresentabile come semplice funzione `RGB -> RGB`.
 
 In questo senso la LUT è usata anche come strumento di analisi. Separando ciò
 che è approssimabile come trasformazione cromatica globale da ciò che resta
-fuori dal modello LUT, gli errori aiutano a localizzare dove FLUX usa contenuto,
-posizione o semantica della scena.
+fuori dal modello LUT, gli errori aiutano a localizzare regioni in cui il target
+FLUX non è spiegato bene da una funzione globale del colore. In molti casi
+queste regioni sono compatibili con differenze legate a contenuto, posizione o
+semantica della scena, anche se la metrica da sola non prova la causa.
 
 # Pipeline sperimentale
 
@@ -209,18 +213,52 @@ risoluzione e un indice euristico di complessità. Queste misure servono per
 ordinare e scremare le candidate, ma non riconoscono davvero la semantica della
 scena. La scelta finale delle 8 immagini resta quindi sperimentale e visiva.
 
-Anche le soglie L1-L4 vanno lette come euristiche, non come classi semantiche
-forti. La corrispondenza tra metriche e descrizione dei livelli è intenzionale
-ma non perfetta: `color_complexity_score`, entropia, concentrazione dei colori
-dominanti, edge density e texture score misurano proprietà utili, ma non
-capiscono se una regione rappresenta pelle, vetro, un'insegna o un materiale
-delicato. Nel codice L4 viene controllato prima di L3, perché una scena urbana
-o molto densa può avere entropia cromatica non estrema ma restare difficile
-per una LUT. L2 non richiede entropia massima: fotografie naturali con ombre,
-cielo o sfondi ampi possono essere casi cromaticamente interessanti anche con
-entropia intermedia. L3 indica complessità intermedia/alta e possibili oggetti
-delicati, ma presenza di persone, pelle o materiali sensibili viene confermata
+Le soglie L1-L4 vanno lette come regole di ordinamento, non come classi
+semantiche forti. La tabella seguente riporta i range usati nello script di
+classificazione (`utils/data/quality.py`). `C` indica
+`color_complexity_score`, cioè il numero di celle RGB occupate nella
+quantizzazione `16^3`; `H` indica `color_entropy_norm`; `D` indica
+`dominant_color_concentration_%`; `E` indica `edge_density`; `T` indica
+`texture_score`.
+
+| Livello suggerito | Condizione | Range euristici usati |
+|---|---:|---|
+| `L1_candidate` | unica | `C < 250`, `H < 0.45`, `D > 55`, `E < 0.08` |
+| `L2_candidate` | 1 | `C >= 430`, `H >= 0.44`, `D <= 55`, `E < 0.09`, `T < 0.065` |
+| `L2_candidate` | 2 | `C >= 400`, `H >= 0.38`, `D <= 55`, `E < 0.03`, `T < 0.035` |
+| `L3_candidate` | unica | `220 <= C <= 650`, `0.38 <= H <= 0.70`, `E >= 0.05` |
+| `L4_candidate` | 1 | `C >= 600`, `E >= 0.10`, `T >= 0.06` |
+| `L4_candidate` | 2 | `C >= 500`, `E >= 0.18` |
+| `L4_candidate` | 3 | `C >= 550`, `E >= 0.09`, `T >= 0.06` |
+| `uncertain` | fallback | immagini che non soddisfano nessuno dei casi precedenti |
+
+Nel codice L4 viene controllato prima di L3, perché una scena urbana o molto
+densa può avere entropia cromatica non estrema ma restare difficile per una
+LUT. L2 non richiede entropia massima: fotografie naturali con ombre, cielo o
+sfondi ampi possono essere casi cromaticamente interessanti anche con entropia
+intermedia. L3 indica complessità intermedia/alta e possibili oggetti delicati,
+ma presenza di persone, pelle o materiali sensibili viene confermata
 visivamente.
+
+Per rendere verificabile la classificazione, questa tabella mostra i valori
+principali delle immagini finali:
+
+| Immagine | Livello | C | H | D | E | T |
+|---|---|---:|---:|---:|---:|---:|
+| `L1_foglia` | L1 | 213 | 0.345 | 59.80 | 0.0153 | 0.0258 |
+| `L2_fiori` | L2 | 749 | 0.546 | 25.68 | 0.0505 | 0.0461 |
+| `L2_roccia` | L2 | 556 | 0.443 | 48.38 | 0.0863 | 0.0495 |
+| `L2_tramonto_lago` | L2 | 432 | 0.392 | 50.92 | 0.0106 | 0.0241 |
+| `L2_tramonto_mare` | L2 | 603 | 0.464 | 35.41 | 0.0298 | 0.0338 |
+| `L3_ragazzi` | L3 | 399 | 0.452 | 50.67 | 0.0728 | 0.0523 |
+| `L4_citta` | L4 | 587 | 0.410 | 55.84 | 0.0909 | 0.0604 |
+| `L4_bracciali` | L4 | 1246 | 0.452 | 45.95 | 0.2243 | 0.0925 |
+
+Alcuni casi mostrano bene perché la scelta non è puramente automatica:
+`L2_fiori`, ad esempio, ha alta complessità cromatica ma struttura non estrema;
+`L3_ragazzi` è importante soprattutto per il contenuto percettivamente delicato;
+`L4_citta` e `L4_bracciali` sono stress test per densità di bordi, materiali e
+regioni con significato diverso.
 
 | Livello | Idea sperimentale | Immagini usate |
 |---|---|---|
@@ -354,30 +392,93 @@ diversi, una LUT globale deve mediare tra le due richieste.
 
 # Metriche
 
-La valutazione principale confronta la ricostruzione LUT con il target FLUX:
+Le metriche sono usate in tre punti diversi della pipeline, con significati
+diversi. Non tutte misurano "qualità" nello stesso senso: alcune servono a
+scegliere immagini sperimentalmente utili, altre a controllare se un target
+generativo è adatto allo studio, e solo l'ultimo gruppo misura direttamente la
+ricostruzione LUT.
+
+| Punto della pipeline | Confronto | Scopo |
+|---|---|---|
+| Selezione immagini | immagine candidata analizzata da sola | stimare varietà cromatica e complessità visiva per costruire i livelli L1-L4 |
+| Controllo target FLUX | originale vs target FLUX | verificare se il target resta vicino alla scena originale e cambia soprattutto il colore |
+| Valutazione LUT | target FLUX vs ricostruzione LUT | misurare quanto il target generativo sia approssimabile da una 3D LUT globale |
+
+Nel progetto, salvo diversa indicazione, `RGB` indica valori sRGB codificati e
+normalizzati in `[0,1]`. La LUT è fittata e applicata in questo spazio; la
+conversione sRGB -> RGB lineare -> XYZ -> Lab viene usata solo per calcolare il
+Delta E CIE76.
+
+## Metriche per la selezione delle immagini
+
+La classificazione L1-L4 usa metriche euristiche calcolate sulle immagini
+candidate prima della generazione FLUX:
+
+| Metrica | Cosa calcola | Come leggerla | Perché è stata scelta |
+|---|---|---|---|
+| `color_complexity_score` | numero di celle RGB quantizzate occupate su una griglia `16^3` | minimo 1, massimo teorico 4096; più alto = più varietà cromatica | distingue immagini con pochi colori dominanti da scene cromaticamente ricche |
+| `color_entropy_norm` | entropia normalizzata della distribuzione dei colori quantizzati | range `0-1`; più alto = colori più distribuiti e meno concentrati | evita di confondere molte celle sparse con una vera distribuzione cromatica ampia |
+| `dominant_color_concentration_%` | percentuale coperta dai colori dominanti | range `0-100`; più alto = pochi colori dominano l'immagine | identifica casi L1, dove una LUT globale dovrebbe essere favorita |
+| `edge_density` | frazione di pixel con gradiente sopra soglia | range `0-1`; più alto = più bordi e dettagli | stima la complessità strutturale che può rendere fragile il confronto pixel-per-pixel |
+| `texture_score` | deviazione standard della magnitudine dei gradienti | non ha limite superiore pratico fisso; più alto = più dettaglio locale | aiuta a individuare texture naturali, materiali e scene più difficili |
+
+Queste metriche non sono usate come benchmark scientifico autonomo. Servono a
+rendere meno arbitraria la scelta delle immagini e a coprire livelli crescenti
+di difficoltà; la selezione finale resta manuale perché contenuto, pelle,
+materiali e semantica non sono catturati in modo affidabile da queste misure.
+
+## Metriche per il controllo dei target FLUX
+
+Dopo la generazione image-to-image, ogni target viene confrontato con
+l'originale. In questo punto della pipeline un valore "migliore" non significa
+sempre "più vicino possibile": un target identico all'originale sarebbe stabile
+ma inutile, mentre un target troppo diverso potrebbe contenere cambiamenti
+strutturali non rappresentabili da una LUT.
+
+| Metrica | Cosa calcola | Come leggerla | Perché è stata scelta |
+|---|---|---|---|
+| `edge_correlation` | correlazione di Pearson tra le mappe di gradiente della luminanza | range `-1` a `1`; più vicino a `1` = bordi più allineati | controlla se FLUX ha conservato la struttura principale della scena |
+| `luma_ssim` | indice SSIM-like globale sulla luma | valore ideale `1`; più alto = luminanza globalmente più coerente; non è SSIM windowed standard | segnala cambiamenti forti di struttura/luminanza senza introdurre una metrica pesante |
+| `rgb_mae` | errore assoluto medio RGB riportato in scala `0-255` | minimo `0`; più basso = colori più vicini all'originale | dà una misura semplice dell'entità media del cambiamento RGB |
+| `rgb_psnr` | rapporto segnale/rumore derivato dall'MSE RGB | in dB, più alto = immagini più simili; infinito se identiche | aiuta a individuare target troppo lontani o troppo simili all'originale |
+| `delta_e_mean`, `delta_e_median`, `delta_e_p95` | distanza CIE76 tra originale e target in spazio Lab | valori non negativi in unità Lab; più alto = cambiamento cromatico più forte | misura se il prompt ha prodotto un cambiamento colore reale e se esistono code locali forti |
+
+Queste metriche producono un'etichetta di supporto (`candidate`,
+`weak_color_change`, `possible_semantic_change`, `check_content_change`). Le
+etichette non sono un filtro automatico: aiutano a leggere i risultati LUT,
+perché un errore alto su un target già sospetto può dipendere da cambiamenti
+generativi oltre il solo colore.
+
+## Metriche per la valutazione LUT
+
+La valutazione principale del progetto confronta la ricostruzione LUT con il
+target FLUX:
 
 $$
 errore = I_{target}^{FLUX} - LUT(I_{originale})
 $$
 
-Sono state usate queste metriche:
+Questa è una valutazione descrittiva caso-per-caso: ogni LUT viene stimata su
+una specifica coppia originale-target e poi confrontata con lo stesso target.
+Il risultato risponde alla domanda "quanto questo target è descrivibile da una
+LUT globale?", non alla domanda "quanto questa LUT generalizza a nuove immagini
+o nuovi prompt".
 
-| Metrica | Ruolo |
-|---|---|
-| `rgb_psnr` | errore pixel-per-pixel sul colore RGB |
-| `luma_ssim` | similarità strutturale semplificata sulla luminanza |
-| `delta_e_mean`, `delta_e_median`, `delta_e_p95` | errore cromatico percettivo medio, mediano e al 95 percentile |
-| `occupied_ratio` | frazione di celle LUT osservate dai campioni |
+| Metrica | Cosa calcola | Come leggerla | Perché è stata scelta |
+|---|---|---|---|
+| `rgb_psnr` | PSNR tra target FLUX e ricostruzione LUT nello spazio sRGB normalizzato | in dB; più alto = ricostruzione più vicina pixel-per-pixel; infinito se identica | misura l'errore globale RGB ed è una metrica richiesta/attesa per questo tipo di confronto |
+| `luma_ssim` | indice SSIM-like globale calcolato sulla luminanza | valore ideale `1`; più alto = migliore coerenza luminosa globale; non confrontabile direttamente con la SSIM windowed di letteratura | controlla se la LUT mantiene struttura luminosa e contrasto generale del target |
+| `delta_e_mean` | media della distanza CIE76 in CIELAB | minimo `0`; più basso = errore cromatico medio minore | è la metrica principale per scegliere la migliore variante LUT, perché il problema è cromatico |
+| `delta_e_median` | mediana della distanza CIE76 | minimo `0`; più basso = errore tipico minore | è più robusta della media rispetto a pochi errori molto forti |
+| `delta_e_p95` | 95-esimo percentile della distanza CIE76 | minimo `0`; più basso = meno errori locali estremi | evidenzia fallimenti localizzati che la media può nascondere |
+| `occupied_ratio` | frazione di nodi/celle LUT che ricevono campioni o contributi | range `0-1`; più alto = griglia più coperta; non è una metrica di qualità visiva | aiuta a interpretare sparsità e affidabilità del fitting, soprattutto per griglie grandi |
 
-PSNR e Delta E sono calcolati su immagini normalizzate in `[0,1]`; di
-conseguenza il data range del PSNR è `1.0`. Il Delta E usato è CIE76: i
-valori RGB sRGB vengono linearizzati, convertiti in XYZ con bianco D65 e poi in
-Lab. La SSIM implementata è una misura globale semplificata sulla luminanza,
-non una SSIM windowed completa; è utile per confrontare la coerenza strutturale
-generale, ma non va letta come giudizio percettivo completo. L'`occupied_ratio`
-non misura qualità visiva: indica quanta parte della griglia LUT è stata
-effettivamente osservata dai campioni, quindi aiuta a interpretare sparsità e
-robustezza del fitting.
+Il Delta E usato è CIE76: una distanza euclidea in CIELAB, utile come proxy
+semplice dell'errore cromatico ma non equivalente a una valutazione percettiva
+completa. Per `mean` e `median`, `occupied_ratio` indica i nodi associati a
+campioni tramite nearest node; per `weighted_mean`, un campione può distribuire
+contributo sugli otto nodi vicini, quindi il valore indica nodi che hanno
+ricevuto peso.
 
 Le metriche non sostituiscono l'analisi visiva. PSNR e SSIM possono essere
 buoni anche se esistono errori localizzati percepibili, per esempio su pelle,
