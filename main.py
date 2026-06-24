@@ -41,6 +41,7 @@ from utils.flux.target_eval import (
     write_csv,
     write_quality_grid,
 )
+from utils.catalog import write_catalog_markdown
 from utils.common.image_io import read_json
 
 
@@ -52,6 +53,7 @@ IMAGES_FLUX_DIR = Path("images_flux")
 IMAGES_FLUX_PREVIEW_DIR = IMAGES_FLUX_DIR / "preview"
 IMAGES_FLUX_TARGET_DIR = IMAGES_FLUX_DIR / "target"
 IMAGES_LUT_DIR = Path("images_lut")
+CATALOG_MD = Path("paper/catalogo_immagini.md")
 
 
 def download_step(overwrite: bool = False) -> list[Path]:
@@ -241,6 +243,11 @@ def report_step() -> None:
     print(f"Contact sheets written to: {contact_sheet_dir}")
 
 
+def catalog_step(output_path: Path = CATALOG_MD) -> None:
+    path = write_catalog_markdown(output_path=output_path)
+    print(f"Catalog markdown written to: {path}")
+
+
 def pipeline(include_flux: bool = False) -> None:
     download_step()
     classify_step()
@@ -269,6 +276,8 @@ def build_parser() -> argparse.ArgumentParser:
     flux_grid_parser.add_argument("--output", type=Path)
     subparsers.add_parser("lut")
     subparsers.add_parser("report")
+    catalog_parser = subparsers.add_parser("catalog")
+    catalog_parser.add_argument("--output", type=Path, default=CATALOG_MD)
     pipeline_parser = subparsers.add_parser("pipeline")
     pipeline_parser.add_argument("--include-flux", action="store_true")
 
@@ -305,6 +314,8 @@ def main() -> None:
         lut_step()
     elif args.command == "report":
         report_step()
+    elif args.command == "catalog":
+        catalog_step(output_path=args.output)
     elif args.command == "pipeline":
         pipeline(include_flux=args.include_flux)
 

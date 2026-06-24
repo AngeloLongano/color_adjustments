@@ -178,12 +178,19 @@ just evaluate-targets
 just flux-target-grid
 just lut-all
 just report-assets
+just catalog
 just check
 ```
 
 Nel workspace usato per il paper sono presenti 8 immagini preparate, 32 target
 FLUX finali, 32 casi immagine/prompt per la LUT e 576 righe metriche, ottenute
 da 18 varianti LUT per ciascun caso.
+
+Oltre alla relazione principale è stato generato anche un catalogo visuale in
+`paper/catalogo_immagini.pdf`, con il relativo sorgente Markdown in
+`paper/catalogo_immagini.md`. Il catalogo raccoglie originali, target FLUX e
+migliori ricostruzioni LUT in formato più esteso, così da permettere una
+verifica visiva più approfondita dei test senza appesantire il paper.
 
 ![Panoramica dei target FLUX finali. Ogni riga corrisponde a una immagine, ogni colonna a un prompt di color grading.](images_flux/target_grid.jpg){ width=82% }
 
@@ -650,6 +657,7 @@ I dati principali usati dal paper sono:
 | `images_lut/metrics_by_lut_size.csv` | aggregazione per dimensione LUT |
 | `images_lut/metrics_by_variant.csv` | aggregazione per variante LUT |
 | `images_lut/best_by_delta_e.csv` | migliore variante per ogni caso secondo Delta E |
+| `paper/catalogo_immagini.md` / `paper/catalogo_immagini.pdf` | catalogo visuale completo dei test |
 
 Codice e asset esterni citati:
 

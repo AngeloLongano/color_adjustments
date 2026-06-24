@@ -61,3 +61,11 @@ paper-pdf:
     pandoc paper/paper.md --pdf-engine=xelatex -V documentclass=article -V geometry:margin=2.5cm --resource-path=.:paper -o paper/paper.pdf
 
 paper: check-assets paper-pdf
+
+catalog-md:
+    uv run python main.py catalog
+
+catalog-pdf: catalog-md
+    pandoc paper/catalogo_immagini.md --pdf-engine=xelatex -V documentclass=article --resource-path=. -o paper/catalogo_immagini.pdf
+
+catalog: catalog-pdf
