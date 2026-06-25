@@ -215,22 +215,29 @@ scena. La scelta finale delle 8 immagini resta quindi sperimentale e visiva.
 
 Le soglie L1-L4 vanno lette come regole di ordinamento, non come classi
 semantiche forti. La tabella seguente riporta i range usati nello script di
-classificazione (`utils/data/quality.py`). `C` indica
-`color_complexity_score`, cioè il numero di celle RGB occupate nella
-quantizzazione `16^3`; `H` indica `color_entropy_norm`; `D` indica
-`dominant_color_concentration_%`; `E` indica `edge_density`; `T` indica
-`texture_score`.
+classificazione (`utils/data/quality.py`). Per compattezza, nella tabella uso
+queste sigle:
 
-| Livello suggerito | Condizione | Range euristici usati |
+- `C`: `color_complexity_score`, cioè numero di celle RGB occupate nella
+  quantizzazione `16^3`;
+- `H`: `color_entropy_norm`, cioè entropia normalizzata della distribuzione dei
+  colori quantizzati;
+- `D`: `dominant_color_concentration_%`, cioè percentuale coperta dai colori
+  dominanti;
+- `E`: `edge_density`, cioè frazione di pixel con gradiente sopra soglia;
+- `T`: `texture_score`, cioè misura euristica della variazione locale dei
+  gradienti.
+
+| Liv. | Caso | Range euristici usati |
 |---|---:|---|
-| `L1_candidate` | unica | `C < 250`, `H < 0.45`, `D > 55`, `E < 0.08` |
-| `L2_candidate` | 1 | `C >= 430`, `H >= 0.44`, `D <= 55`, `E < 0.09`, `T < 0.065` |
-| `L2_candidate` | 2 | `C >= 400`, `H >= 0.38`, `D <= 55`, `E < 0.03`, `T < 0.035` |
-| `L3_candidate` | unica | `220 <= C <= 650`, `0.38 <= H <= 0.70`, `E >= 0.05` |
-| `L4_candidate` | 1 | `C >= 600`, `E >= 0.10`, `T >= 0.06` |
-| `L4_candidate` | 2 | `C >= 500`, `E >= 0.18` |
-| `L4_candidate` | 3 | `C >= 550`, `E >= 0.09`, `T >= 0.06` |
-| `uncertain` | fallback | immagini che non soddisfano nessuno dei casi precedenti |
+| L1 | unico | `C < 250`, `H < 0.45`, `D > 55`, `E < 0.08` |
+| L2 | 1 | `C >= 430`, `H >= 0.44`, `D <= 55`, `E < 0.09`, `T < 0.065` |
+| L2 | 2 | `C >= 400`, `H >= 0.38`, `D <= 55`, `E < 0.03`, `T < 0.035` |
+| L3 | unico | `220 <= C <= 650`, `0.38 <= H <= 0.70`, `E >= 0.05` |
+| L4 | 1 | `C >= 600`, `E >= 0.10`, `T >= 0.06` |
+| L4 | 2 | `C >= 500`, `E >= 0.18` |
+| L4 | 3 | `C >= 550`, `E >= 0.09`, `T >= 0.06` |
+| incerto | fallback | immagini che non soddisfano nessuno dei casi precedenti |
 
 Nel codice L4 viene controllato prima di L3, perché una scena urbana o molto
 densa può avere entropia cromatica non estrema ma restare difficile per una
@@ -413,13 +420,42 @@ conversione in CIELAB viene usata solo per calcolare il Delta E CIEDE2000.
 La classificazione L1-L4 usa metriche euristiche calcolate sulle immagini
 candidate prima della generazione FLUX:
 
-| Metrica | Cosa calcola | Come leggerla | Perché è stata scelta |
-|---|---|---|---|
-| `color_complexity_score` | numero di celle RGB quantizzate occupate su una griglia `16^3` | minimo 1, massimo teorico 4096; più alto = più varietà cromatica | distingue immagini con pochi colori dominanti da scene cromaticamente ricche |
-| `color_entropy_norm` | entropia normalizzata della distribuzione dei colori quantizzati | range `0-1`; più alto = colori più distribuiti e meno concentrati | evita di confondere molte celle sparse con una vera distribuzione cromatica ampia |
-| `dominant_color_concentration_%` | percentuale coperta dai colori dominanti | range `0-100`; più alto = pochi colori dominano l'immagine | identifica casi L1, dove una LUT globale dovrebbe essere favorita |
-| `edge_density` | frazione di pixel con gradiente sopra soglia | range `0-1`; più alto = più bordi e dettagli | stima la complessità strutturale che può rendere fragile il confronto pixel-per-pixel |
-| `texture_score` | deviazione standard della magnitudine dei gradienti | non ha limite superiore pratico fisso; più alto = più dettaglio locale | aiuta a individuare texture naturali, materiali e scene più difficili |
+- `color_complexity_score`
+  - Calcolo: conta quante celle RGB sono occupate dopo una quantizzazione
+    `16^3`.
+  - Lettura: minimo 1, massimo teorico 4096; valori più alti indicano più
+    varietà cromatica.
+  - Perché è stata scelta: distingue immagini con pochi colori dominanti da
+    scene cromaticamente ricche.
+
+- `color_entropy_norm`
+  - Calcolo: misura l'entropia normalizzata della distribuzione dei colori
+    quantizzati.
+  - Lettura: range `0-1`; valori più alti indicano colori più distribuiti e
+    meno concentrati.
+  - Perché è stata scelta: evita di confondere molte celle sparse con una vera
+    distribuzione cromatica ampia.
+
+- `dominant_color_concentration_%`
+  - Calcolo: misura la percentuale di pixel coperta dai colori dominanti.
+  - Lettura: range `0-100`; valori più alti indicano che pochi colori dominano
+    l'immagine.
+  - Perché è stata scelta: identifica i casi L1, dove una LUT globale dovrebbe
+    essere favorita.
+
+- `edge_density`
+  - Calcolo: misura la frazione di pixel con gradiente sopra soglia.
+  - Lettura: range `0-1`; valori più alti indicano più bordi e dettagli.
+  - Perché è stata scelta: stima la complessità strutturale che può rendere
+    fragile il confronto pixel-per-pixel.
+
+- `texture_score`
+  - Calcolo: usa la deviazione standard della magnitudine dei gradienti come
+    indicatore di dettaglio locale.
+  - Lettura: non ha un limite superiore pratico fisso; valori più alti indicano
+    più dettaglio locale.
+  - Perché è stata scelta: aiuta a individuare texture naturali, materiali e
+    scene più difficili.
 
 Queste metriche non sono usate come benchmark scientifico autonomo. Servono a
 rendere meno arbitraria la scelta delle immagini e a coprire livelli crescenti
@@ -434,19 +470,80 @@ sempre "più vicino possibile": un target identico all'originale sarebbe stabile
 ma inutile, mentre un target troppo diverso potrebbe contenere cambiamenti
 strutturali non rappresentabili da una LUT.
 
-| Metrica | Cosa calcola | Come leggerla | Perché è stata scelta |
-|---|---|---|---|
-| `edge_correlation` | correlazione di Pearson tra le mappe di gradiente della luminanza | range `-1` a `1`; più vicino a `1` = bordi più allineati | controlla se FLUX ha conservato la struttura principale della scena |
-| `ssim` | SSIM standard calcolata con `skimage.metrics.structural_similarity` su RGB multicanale | valore ideale `1`; più alto = struttura e contrasto più simili localmente | segnala cambiamenti forti di struttura, contrasto o contenuto |
-| `rgb_mae` | errore assoluto medio RGB riportato in scala `0-255` | minimo `0`; più basso = colori più vicini all'originale | dà una misura semplice dell'entità media del cambiamento RGB |
-| `rgb_psnr` | rapporto segnale/rumore derivato dall'MSE RGB | in dB, più alto = immagini più simili; infinito se identiche | aiuta a individuare target troppo lontani o troppo simili all'originale |
-| `delta_e_mean`, `delta_e_median`, `delta_e_p95` | differenza cromatica CIEDE2000 tra originale e target in spazio CIELAB | valori non negativi; più alto = cambiamento cromatico più forte | misura se il prompt ha prodotto un cambiamento colore reale e se esistono code locali forti |
+- `edge_correlation`
+  - Calcolo: correlazione di Pearson tra le mappe di gradiente della luminanza
+    di originale e target.
+  - Lettura: range `-1` a `1`; valori più vicini a `1` indicano bordi più
+    allineati.
+  - Perché è stata scelta: controlla se FLUX ha conservato la struttura
+    principale della scena.
+
+- `ssim`
+  - Calcolo: SSIM standard di `skimage.metrics.structural_similarity`, usata su
+    immagini RGB multicanale.
+  - Lettura: il valore ideale è `1`; valori più alti indicano struttura e
+    contrasto più simili localmente.
+  - Perché è stata scelta: segnala cambiamenti forti di struttura, contrasto o
+    contenuto.
+
+- `rgb_mae`
+  - Calcolo: errore assoluto medio tra originale e target sui canali RGB,
+    riportato in scala `0-255`.
+  - Lettura: il minimo è `0`; valori più bassi indicano colori più vicini
+    all'originale.
+  - Perché è stata scelta: dà una misura semplice dell'entità media del
+    cambiamento RGB.
+
+- `rgb_psnr`
+  - Calcolo: rapporto segnale/rumore derivato dall'MSE RGB tra originale e
+    target.
+  - Lettura: è espresso in dB; valori più alti indicano immagini più simili,
+    infinito se identiche.
+  - Perché è stata scelta: aiuta a individuare target troppo lontani o troppo
+    simili all'originale.
+
+- `delta_e_mean`, `delta_e_median`, `delta_e_p95`
+  - Calcolo: differenza cromatica CIEDE2000 tra originale e target dopo
+    conversione in CIELAB.
+  - Lettura: valori non negativi; valori più alti indicano cambiamento
+    cromatico più forte.
+  - Perché sono state scelte: misurano se il prompt ha prodotto un cambiamento
+    colore reale e se esistono code locali forti.
 
 Queste metriche producono un'etichetta di supporto (`candidate`,
 `weak_color_change`, `possible_semantic_change`, `check_content_change`). Le
 etichette non sono un filtro automatico: aiutano a leggere i risultati LUT,
 perché un errore alto su un target già sospetto può dipendere da cambiamenti
 generativi oltre il solo colore.
+
+La classificazione è euristica e viene applicata in ordine nello script
+`utils/flux/target_eval.py`:
+
+- `check_content_change`
+  - Condizione: `edge_correlation < 0.70` oppure `ssim < 0.45`.
+  - Significato: il target è strutturalmente troppo lontano dall'originale. La
+    differenza non sembra solo cromatica, quindi il caso va controllato
+    visivamente prima di interpretare l'errore LUT.
+
+- `weak_color_change`
+  - Condizione: se il target non è già `check_content_change` e
+    `delta_e_mean < 4.0`.
+  - Significato: il contenuto è abbastanza stabile, ma il cambiamento cromatico
+    medio è debole. Il target può essere poco informativo perché FLUX ha
+    modificato troppo poco l'immagine.
+
+- `possible_semantic_change`
+  - Condizione: se il target non è già nei casi precedenti,
+    `delta_e_p95 > 55.0` e `edge_correlation < 0.82`.
+  - Significato: la media può essere accettabile, ma esistono errori cromatici
+    locali molto forti insieme a un allineamento dei bordi non ottimale. È un
+    indizio di possibile modifica locale o semantica.
+
+- `candidate`
+  - Condizione: nessuna delle condizioni precedenti è attiva.
+  - Significato: il target è considerato adatto allo studio LUT, perché conserva
+    abbastanza la struttura e presenta un cambiamento cromatico non troppo
+    debole né evidentemente localizzato.
 
 ## Metriche per la valutazione LUT
 
@@ -463,14 +560,49 @@ Il risultato risponde alla domanda "quanto questo target è descrivibile da una
 LUT globale?", non alla domanda "quanto questa LUT generalizza a nuove immagini
 o nuovi prompt".
 
-| Metrica | Cosa calcola | Come leggerla | Perché è stata scelta |
-|---|---|---|---|
-| `rgb_psnr` | PSNR tra target FLUX e ricostruzione LUT nello spazio sRGB normalizzato | in dB; più alto = ricostruzione più vicina pixel-per-pixel; infinito se identica | misura l'errore globale RGB ed è una metrica richiesta/attesa per questo tipo di confronto |
-| `ssim` | SSIM standard calcolata con `skimage.metrics.structural_similarity` su RGB multicanale | valore ideale `1`; più alto = migliore somiglianza strutturale locale | controlla se la LUT mantiene struttura, contrasto e coerenza locale del target |
-| `delta_e_mean` | media della differenza cromatica CIEDE2000 in CIELAB | minimo `0`; più basso = errore cromatico medio minore | è la metrica principale per scegliere la migliore variante LUT, perché il problema è cromatico |
-| `delta_e_median` | mediana della differenza cromatica CIEDE2000 | minimo `0`; più basso = errore tipico minore | è più robusta della media rispetto a pochi errori molto forti |
-| `delta_e_p95` | 95-esimo percentile della differenza cromatica CIEDE2000 | minimo `0`; più basso = meno errori locali estremi | evidenzia fallimenti localizzati che la media può nascondere |
-| `occupied_ratio` | frazione di nodi/celle LUT che ricevono campioni o contributi | range `0-1`; più alto = griglia più coperta; non è una metrica di qualità visiva | aiuta a interpretare sparsità e affidabilità del fitting, soprattutto per griglie grandi |
+- `rgb_psnr`
+  - Calcolo: PSNR tra target FLUX e ricostruzione LUT nello spazio sRGB
+    normalizzato.
+  - Lettura: è espresso in dB; valori più alti indicano ricostruzione più vicina
+    pixel-per-pixel, infinito se identica.
+  - Perché è stata scelta: misura l'errore globale RGB ed è una metrica
+    richiesta/attesa per questo tipo di confronto.
+
+- `ssim`
+  - Calcolo: SSIM standard di `skimage.metrics.structural_similarity`, usata su
+    immagini RGB multicanale.
+  - Lettura: il valore ideale è `1`; valori più alti indicano migliore
+    somiglianza strutturale locale.
+  - Perché è stata scelta: controlla se la LUT mantiene struttura, contrasto e
+    coerenza locale del target.
+
+- `delta_e_mean`
+  - Calcolo: media della differenza cromatica CIEDE2000 in CIELAB.
+  - Lettura: il minimo è `0`; valori più bassi indicano errore cromatico medio
+    minore.
+  - Perché è stata scelta: è la metrica principale per scegliere la migliore
+    variante LUT, perché il problema studiato è cromatico.
+
+- `delta_e_median`
+  - Calcolo: mediana della differenza cromatica CIEDE2000 in CIELAB.
+  - Lettura: il minimo è `0`; valori più bassi indicano errore tipico minore.
+  - Perché è stata scelta: descrive l'errore tipico ed è più robusta della
+    media rispetto a pochi errori molto forti.
+
+- `delta_e_p95`
+  - Calcolo: 95-esimo percentile della differenza cromatica CIEDE2000.
+  - Lettura: il minimo è `0`; valori più bassi indicano meno errori locali
+    estremi.
+  - Perché è stata scelta: evidenzia fallimenti localizzati che la media può
+    nascondere.
+
+- `occupied_ratio`
+  - Calcolo: frazione di nodi/celle LUT che ricevono campioni o contributi
+    durante il fitting.
+  - Lettura: range `0-1`; valori più alti indicano una griglia più coperta, ma
+    non una qualità visiva necessariamente migliore.
+  - Perché è stata scelta: aiuta a interpretare sparsità e affidabilità del
+    fitting, soprattutto per griglie grandi.
 
 Il Delta E usato è CIEDE2000, calcolato in CIELAB tramite `skimage.color`: è
 una formula percettivamente più accurata della distanza euclidea semplice in
@@ -575,9 +707,9 @@ insegne e materiali diversi.
 quando FLUX produce soprattutto un grading globale. La LUT ricostruisce bene il
 look complessivo e gli errori restano distribuiti in modo moderato.
 
-![Caso semplice: `L1_foglia / p03_cold_winter_grade`. La migliore LUT riproduce bene il target freddo perché la scena contiene pochi cluster cromatici dominanti.](images_lut/L1_foglia/p03_cold_winter_grade/best_summary.png){ width=100% }
+![Caso semplice: `L1_foglia / p03_cold_winter_grade`. La migliore LUT riproduce bene il target freddo perché la scena contiene pochi cluster cromatici dominanti.](images_lut/L1_foglia/p03_cold_winter_grade/best_summary.png){ width=110% }
 
-![Caso ricco ma ancora favorevole: `L2_fiori / p01_warm_cinematic`. La trasformazione è cromaticamente varia, ma resta abbastanza coerente nello spazio RGB.](images_lut/L2_fiori/p01_warm_cinematic/best_summary.png){ width=100% }
+![Caso ricco ma ancora favorevole: `L2_fiori / p01_warm_cinematic`. La trasformazione è cromaticamente varia, ma resta abbastanza coerente nello spazio RGB.](images_lut/L2_fiori/p01_warm_cinematic/best_summary.png){ width=110% }
 
 ## Confronto visivo tra metodi LUT
 
@@ -634,14 +766,21 @@ troppo grossolana o l'interpolazione è inadeguata, gradienti regolari possono
 mostrare banding, discontinuità o errori visibili nelle sfumature.
 
 I risultati sono migliori del previsto: con interpolazione trilineare e griglie
-`65^3`, le transizioni restano abbastanza morbide. Questo suggerisce che, per
-questi target, la trasformazione di FLUX sui gradienti è ancora abbastanza
-liscia nello spazio RGB. Il caso non dimostra che ogni gradiente sia facile per
-una LUT, ma mostra che una griglia fine e una buona interpolazione possono
-rappresentare bene trasformazioni cromatiche continue quando non intervengono
-modifiche semantiche forti.
+`65^3`, le transizioni restano abbastanza morbide. Il caso
+`L2_tramonto_lago` isola soprattutto cielo, acqua e foschia, quindi è utile per
+osservare sfumature ampie e regolari. `L2_tramonto_mare` è stato aggiunto come
+caso più sfidante: oltre al tramonto contiene nuvole, onde, riflessi e dettagli
+fini, quindi combina gradienti continui e variazioni locali più dense.
 
-![Test sui gradienti: `L2_tramonto_lago / p03_cold_winter_grade`. L'errore resta contenuto nonostante cielo e acqua contengano transizioni continue.](images_lut/L2_tramonto_lago/p03_cold_winter_grade/best_summary.png){ width=100% }
+Questo suggerisce che, per questi target, la trasformazione di FLUX sui
+gradienti è ancora abbastanza liscia nello spazio RGB. Il caso non dimostra che
+ogni gradiente sia facile per una LUT, ma mostra che una griglia fine e una
+buona interpolazione possono rappresentare bene trasformazioni cromatiche
+continue quando non intervengono modifiche semantiche forti.
+
+![Test sui gradienti: `L2_tramonto_lago / p03_cold_winter_grade`. L'errore resta contenuto nonostante cielo e acqua contengano transizioni continue.](images_lut/L2_tramonto_lago/p03_cold_winter_grade/best_summary.png){ width=110% }
+
+![Test sui gradienti con dettagli più fitti: `L2_tramonto_mare / p03_cold_winter_grade`. La scena contiene tramonto, nuvole, onde e riflessi: la LUT mantiene bene il grading freddo, ma il caso è più sfidante perché le sfumature continue convivono con molte variazioni locali.](images_lut/L2_tramonto_mare/p03_cold_winter_grade/best_summary.png){ width=110% }
 
 ## Casi intermedi
 
@@ -651,7 +790,7 @@ locali; i ragazzi introducono pelle, volti e abiti. In questi casi piccoli
 spostamenti cromatici possono essere più visibili, anche quando Delta E e PSNR
 restano accettabili.
 
-![Caso percettivamente delicato: `L3_ragazzi / p01_warm_cinematic`. La LUT approssima il grading globale, ma pelle e volti rendono visibili differenze locali.](images_lut/L3_ragazzi/p01_warm_cinematic/best_summary.png){ width=100% }
+![Caso percettivamente delicato: `L3_ragazzi / p01_warm_cinematic`. La LUT approssima il grading globale, ma pelle e volti rendono visibili differenze locali.](images_lut/L3_ragazzi/p01_warm_cinematic/best_summary.png){ width=110% }
 
 ## Casi limite
 
@@ -666,7 +805,7 @@ materiali, dettagli, insegne, vetri, riflessi e ombre possono essere trattati
 da FLUX in modo localmente diverso. Una LUT globale non può distinguere due
 pixel con RGB simile ma contenuto diverso.
 
-![Caso con materiali e dettagli minuti: `L4_bracciali / p02_teal_orange`. Gli errori si concentrano su riflessi, bordi e piccoli oggetti.](images_lut/L4_bracciali/p02_teal_orange/best_summary.png){ width=100% }
+![Caso con materiali e dettagli minuti: `L4_bracciali / p02_teal_orange`. Gli errori si concentrano su riflessi, bordi e piccoli oggetti.](images_lut/L4_bracciali/p02_teal_orange/best_summary.png){ width=110% }
 
 `L2_roccia / p01_warm_cinematic` è istruttivo per un motivo diverso: non è
 una scena semanticamente complessa come la città, ma la texture naturale della
@@ -674,7 +813,7 @@ roccia produce errori locali marcati. La migliore variante ha Delta E p95
 `23.282`, e mostra che anche una scena senza persone o oggetti urbani può
 essere difficile quando il target introduce variazioni locali non uniformi.
 
-![Caso limite su texture naturale: `L2_roccia / p01_warm_cinematic`. La metrica Delta E p95 evidenzia errori localizzati sulle variazioni fini della superficie.](images_lut/L2_roccia/p01_warm_cinematic/best_summary.png){ width=100% }
+![Caso limite su texture naturale: `L2_roccia / p01_warm_cinematic`. La metrica Delta E p95 evidenzia errori localizzati sulle variazioni fini della superficie.](images_lut/L2_roccia/p01_warm_cinematic/best_summary.png){ width=110% }
 
 Il fallimento più istruttivo è `L4_citta / p03_cold_winter_grade`: anche la
 migliore variante ha PSNR `18.279`, SSIM `0.6929`, Delta E medio `8.610` e
@@ -682,7 +821,7 @@ Delta E p95 `25.493`. La heatmap mostra errori su insegne, bordi, finestre,
 persone e regioni urbane dense. Il problema non è solo la precisione della LUT:
 il target diffusion contiene modifiche locali e semantiche.
 
-![Caso limite: `L4_citta / p03_cold_winter_grade`. La LUT riproduce parte del look freddo, ma fallisce dove il target FLUX modifica dettagli locali e strutture urbane.](images_lut/L4_citta/p03_cold_winter_grade/best_summary.png){ width=100% }
+![Caso limite: `L4_citta / p03_cold_winter_grade`. La LUT riproduce parte del look freddo, ma fallisce dove il target FLUX modifica dettagli locali e strutture urbane.](images_lut/L4_citta/p03_cold_winter_grade/best_summary.png){ width=110% }
 
 # Discussione
 
@@ -720,8 +859,6 @@ Il lavoro ha alcuni limiti importanti:
 - il dataset è piccolo e pensato come studio sperimentale, non come benchmark
   esaustivo;
 - i risultati dipendono dal modello locale, dai prompt e dal seed;
-- le immagini Unsplash richiedono attribuzione esterna se usate in una
-  distribuzione pubblica del PDF.
 
 Possibili estensioni includono LUT locali o mascherate semanticamente, fitting
 regolarizzato, confronto con regressori colore continui, valutazione su più
@@ -772,14 +909,3 @@ Codice e asset esterni citati:
 - Unsplash, usato per `tramonto_mare`
   (`https://unsplash.com/photos/JE01L3hB0GQ`) e `tramonto_lago`
   (`https://unsplash.com/photos/qkfxBc2NQ18`).
-
-La generazione del PDF è pensata per essere eseguita dalla root del repository:
-
-```bash
-pandoc paper/paper.md \
-  --pdf-engine=xelatex \
-  -V documentclass=article \
-  -V geometry:margin=2.5cm \
-  --resource-path=.:paper \
-  -o paper/paper.pdf
-```
