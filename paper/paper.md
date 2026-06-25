@@ -902,7 +902,7 @@ I dati principali usati dal paper sono:
 Codice e asset esterni citati:
 
 - `flux_model/iris.c`: implementazione locale di FLUX.2 in C di Salvatore
-  Sanfilippo / antirez, usata come dipendenza esterna vendorizzata;
+  Sanfilippo / antirez, usata come dipendenza esterna vendorizzata (<https://github.com/antirez/iris.c>);
 - FLUX.2 Klein / `flux-klein-4b-base`, modello usato per generare i target;
 - MIT-Adobe FiveK Dataset, usato per `foglia`, `roccia`, `citta`, `fiori`,
   `bracciali` e `ragazzi`;
