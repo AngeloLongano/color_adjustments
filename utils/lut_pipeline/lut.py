@@ -13,7 +13,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from utils.common.image_io import load_rgb, save_rgb, resize_to, write_json
-from utils.common.metrics import delta_e_76, psnr, rgb_to_luma, simple_ssim
+from utils.common.metrics import delta_e_2000, psnr, ssim_metric
 
 DEFAULT_FIT_METHODS = ["mean", "median", "weighted_mean"]
 DEFAULT_APPLY_METHODS = ["nearest", "trilinear"]
@@ -213,7 +213,7 @@ def apply_lut(image: np.ndarray, lut: np.ndarray, apply_method: str) -> np.ndarr
 
 
 def error_heatmap(target: np.ndarray, reconstruction: np.ndarray) -> np.ndarray:
-    delta_e = delta_e_76(target, reconstruction)
+    delta_e = delta_e_2000(target, reconstruction)
     scale = np.percentile(delta_e, 99)
     if scale <= 0:
         scale = 1.0
@@ -458,7 +458,7 @@ def make_lut_summary_image(
         metrics = result["metrics"]
         metric_text = (
             f"PSNR: {metrics['rgb_psnr']}\n"
-            f"SSIM luma: {metrics['luma_ssim']}\n"
+            f"SSIM: {metrics['ssim']}\n"
             f"Delta E mean: {metrics['delta_e_mean']}\n"
             f"Delta E p95: {metrics['delta_e_p95']}\n"
             f"RGB MAE: {metrics['rgb_mae']} px\n"
@@ -576,7 +576,7 @@ def make_lut17_method_grid(
             metrics = result["metrics"]
             best_prefix = "BEST LUT17 | " if is_best else ""
             metric_text = (
-                f"{best_prefix}PSNR {metrics['rgb_psnr']} | SSIM {metrics['luma_ssim']}\n"
+                f"{best_prefix}PSNR {metrics['rgb_psnr']} | SSIM {metrics['ssim']}\n"
                 f"Delta E mean {metrics['delta_e_mean']} | p95 {metrics['delta_e_p95']}"
             )
             _draw_wrapped_text(
@@ -672,14 +672,12 @@ def make_best_lut_summary_image(
 
 
 def compute_metrics(target: np.ndarray, reconstruction: np.ndarray) -> dict:
-    delta_e = delta_e_76(target, reconstruction)
+    delta_e = delta_e_2000(target, reconstruction)
     rgb_abs = np.abs(target - reconstruction)
-    luma_target = rgb_to_luma(target)
-    luma_reconstruction = rgb_to_luma(reconstruction)
     return {
         "rgb_mae": round(float(rgb_abs.mean() * 255.0), 3),
         "rgb_psnr": round(psnr(target, reconstruction), 3),
-        "luma_ssim": round(simple_ssim(luma_target, luma_reconstruction), 4),
+        "ssim": round(ssim_metric(target, reconstruction), 4),
         "delta_e_mean": round(float(delta_e.mean()), 3),
         "delta_e_median": round(float(np.median(delta_e)), 3),
         "delta_e_p95": round(float(np.percentile(delta_e, 95)), 3),
@@ -921,7 +919,7 @@ def main() -> None:
             f"fit={row['fit_method']} "
             f"apply={row['apply_method']} "
             f"psnr={row['rgb_psnr']} "
-            f"ssim={row['luma_ssim']} "
+            f"ssim={row['ssim']} "
             f"dE_mean={row['delta_e_mean']} "
             f"occupied={row['occupied_ratio']}"
         )

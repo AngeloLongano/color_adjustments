@@ -82,8 +82,8 @@ diverse. Le LUT sono state applicate all'immagine originale e la ricostruzione
 
 Il confronto usa metriche in punti diversi della pipeline: selezione delle
 immagini, controllo dei target FLUX e valutazione finale delle ricostruzioni
-LUT. Le metriche principali sono PSNR RGB, un indice SSIM-like globale su
-luminanza, Delta E CIE76 e copertura della griglia LUT. I risultati mostrano
+LUT. Le metriche principali sono PSNR RGB, SSIM standard multicanale,
+Delta E CIEDE2000 e copertura della griglia LUT. I risultati mostrano
 che una LUT stimata caso per caso approssima bene i target in cui FLUX applica
 prevalentemente un color grading globale. La qualità peggiora quando il modello
 modifica texture, dettagli locali, materiali o regioni semanticamente distinte.
@@ -406,8 +406,7 @@ ricostruzione LUT.
 
 Nel progetto, salvo diversa indicazione, `RGB` indica valori sRGB codificati e
 normalizzati in `[0,1]`. La LUT è fittata e applicata in questo spazio; la
-conversione sRGB -> RGB lineare -> XYZ -> Lab viene usata solo per calcolare il
-Delta E CIE76.
+conversione in CIELAB viene usata solo per calcolare il Delta E CIEDE2000.
 
 ## Metriche per la selezione delle immagini
 
@@ -438,10 +437,10 @@ strutturali non rappresentabili da una LUT.
 | Metrica | Cosa calcola | Come leggerla | Perché è stata scelta |
 |---|---|---|---|
 | `edge_correlation` | correlazione di Pearson tra le mappe di gradiente della luminanza | range `-1` a `1`; più vicino a `1` = bordi più allineati | controlla se FLUX ha conservato la struttura principale della scena |
-| `luma_ssim` | indice SSIM-like globale sulla luma | valore ideale `1`; più alto = luminanza globalmente più coerente; non è SSIM windowed standard | segnala cambiamenti forti di struttura/luminanza senza introdurre una metrica pesante |
+| `ssim` | SSIM standard calcolata con `skimage.metrics.structural_similarity` su RGB multicanale | valore ideale `1`; più alto = struttura e contrasto più simili localmente | segnala cambiamenti forti di struttura, contrasto o contenuto |
 | `rgb_mae` | errore assoluto medio RGB riportato in scala `0-255` | minimo `0`; più basso = colori più vicini all'originale | dà una misura semplice dell'entità media del cambiamento RGB |
 | `rgb_psnr` | rapporto segnale/rumore derivato dall'MSE RGB | in dB, più alto = immagini più simili; infinito se identiche | aiuta a individuare target troppo lontani o troppo simili all'originale |
-| `delta_e_mean`, `delta_e_median`, `delta_e_p95` | distanza CIE76 tra originale e target in spazio Lab | valori non negativi in unità Lab; più alto = cambiamento cromatico più forte | misura se il prompt ha prodotto un cambiamento colore reale e se esistono code locali forti |
+| `delta_e_mean`, `delta_e_median`, `delta_e_p95` | differenza cromatica CIEDE2000 tra originale e target in spazio CIELAB | valori non negativi; più alto = cambiamento cromatico più forte | misura se il prompt ha prodotto un cambiamento colore reale e se esistono code locali forti |
 
 Queste metriche producono un'etichetta di supporto (`candidate`,
 `weak_color_change`, `possible_semantic_change`, `check_content_change`). Le
@@ -467,15 +466,16 @@ o nuovi prompt".
 | Metrica | Cosa calcola | Come leggerla | Perché è stata scelta |
 |---|---|---|---|
 | `rgb_psnr` | PSNR tra target FLUX e ricostruzione LUT nello spazio sRGB normalizzato | in dB; più alto = ricostruzione più vicina pixel-per-pixel; infinito se identica | misura l'errore globale RGB ed è una metrica richiesta/attesa per questo tipo di confronto |
-| `luma_ssim` | indice SSIM-like globale calcolato sulla luminanza | valore ideale `1`; più alto = migliore coerenza luminosa globale; non confrontabile direttamente con la SSIM windowed di letteratura | controlla se la LUT mantiene struttura luminosa e contrasto generale del target |
-| `delta_e_mean` | media della distanza CIE76 in CIELAB | minimo `0`; più basso = errore cromatico medio minore | è la metrica principale per scegliere la migliore variante LUT, perché il problema è cromatico |
-| `delta_e_median` | mediana della distanza CIE76 | minimo `0`; più basso = errore tipico minore | è più robusta della media rispetto a pochi errori molto forti |
-| `delta_e_p95` | 95-esimo percentile della distanza CIE76 | minimo `0`; più basso = meno errori locali estremi | evidenzia fallimenti localizzati che la media può nascondere |
+| `ssim` | SSIM standard calcolata con `skimage.metrics.structural_similarity` su RGB multicanale | valore ideale `1`; più alto = migliore somiglianza strutturale locale | controlla se la LUT mantiene struttura, contrasto e coerenza locale del target |
+| `delta_e_mean` | media della differenza cromatica CIEDE2000 in CIELAB | minimo `0`; più basso = errore cromatico medio minore | è la metrica principale per scegliere la migliore variante LUT, perché il problema è cromatico |
+| `delta_e_median` | mediana della differenza cromatica CIEDE2000 | minimo `0`; più basso = errore tipico minore | è più robusta della media rispetto a pochi errori molto forti |
+| `delta_e_p95` | 95-esimo percentile della differenza cromatica CIEDE2000 | minimo `0`; più basso = meno errori locali estremi | evidenzia fallimenti localizzati che la media può nascondere |
 | `occupied_ratio` | frazione di nodi/celle LUT che ricevono campioni o contributi | range `0-1`; più alto = griglia più coperta; non è una metrica di qualità visiva | aiuta a interpretare sparsità e affidabilità del fitting, soprattutto per griglie grandi |
 
-Il Delta E usato è CIE76: una distanza euclidea in CIELAB, utile come proxy
-semplice dell'errore cromatico ma non equivalente a una valutazione percettiva
-completa. Per `mean` e `median`, `occupied_ratio` indica i nodi associati a
+Il Delta E usato è CIEDE2000, calcolato in CIELAB tramite `skimage.color`: è
+una formula percettivamente più accurata della distanza euclidea semplice in
+Lab ed è quindi più difendibile come metrica cromatica finale. Per `mean` e
+`median`, `occupied_ratio` indica i nodi associati a
 campioni tramite nearest node; per `weighted_mean`, un campione può distribuire
 contributo sugli otto nodi vicini, quindi il valore indica nodi che hanno
 ricevuto peso.
@@ -515,11 +515,11 @@ non può recuperare.
 La tabella riporta le metriche medie sui 32 casi e su tutte le varianti con la
 stessa dimensione LUT.
 
-| LUT size | PSNR medio | SSIM luma | Delta E medio | Delta E p95 | Occupied ratio |
+| LUT size | PSNR medio | SSIM | Delta E medio | Delta E p95 | Occupied ratio |
 |---:|---:|---:|---:|---:|---:|
-| 17 | 23.388 | 0.9635 | 8.657 | 24.306 | 0.1495 |
-| 33 | 23.910 | 0.9672 | 7.789 | 22.710 | 0.0926 |
-| 65 | 23.716 | 0.9666 | 7.574 | 22.983 | 0.0541 |
+| 17 | 23.388 | 0.7382 | 5.744 | 16.306 | 0.1495 |
+| 33 | 23.910 | 0.7552 | 5.171 | 15.180 | 0.0926 |
+| 65 | 23.716 | 0.7443 | 4.995 | 15.209 | 0.0541 |
 
 Il passaggio da `17^3` a `33^3` migliora PSNR, SSIM e Delta E. Il passaggio a
 `65^3` riduce ancora il Delta E medio, ma non migliora PSNR e SSIM medi. Inoltre
@@ -536,9 +536,9 @@ La variante migliore in media secondo Delta E medio è risultata:
 lut_65_weighted_mean_trilinear
 ```
 
-| Variante | PSNR | SSIM luma | Delta E medio | Delta E p95 | Occupied ratio |
+| Variante | PSNR | SSIM | Delta E medio | Delta E p95 | Occupied ratio |
 |---|---:|---:|---:|---:|---:|
-| migliore | 24.387 | 0.9701 | 7.284 | 21.434 | 0.0776 |
+| migliore | 24.387 | 0.7744 | 4.836 | 14.316 | 0.0776 |
 
 L'interpolazione trilineare è generalmente preferibile al nearest neighbor
 perché produce transizioni più continue. La media pesata funziona bene perché
@@ -549,19 +549,19 @@ casi con outlier o modifiche locali incoerenti, come `L1_foglia / p01` e
 ## Migliori casi per immagine
 
 La tabella seguente mostra, per ogni immagine, il prompt migliore secondo Delta
-E medio tra le varianti disponibili. Nei casi elencati la variante migliore è
+E CIEDE2000 medio tra le varianti disponibili. Nei casi elencati la variante migliore è
 `65^3 weighted_mean trilinear`.
 
 | Immagine | Prompt | PSNR | SSIM | Delta E |
 |---|---|---:|---:|---:|
-| `L1_foglia` | `p03` | 27.019 | 0.9719 | 5.297 |
-| `L2_fiori` | `p01` | 27.973 | 0.9939 | 5.480 |
-| `L2_roccia` | `p02` | 25.873 | 0.9875 | 7.870 |
-| `L2_tramonto_lago` | `p03` | 25.677 | 0.9570 | 3.851 |
-| `L2_tramonto_mare` | `p03` | 26.421 | 0.9760 | 4.862 |
-| `L3_ragazzi` | `p01` | 26.840 | 0.9897 | 5.574 |
-| `L4_bracciali` | `p02` | 23.360 | 0.9447 | 7.684 |
-| `L4_citta` | `p02` | 25.738 | 0.9848 | 5.890 |
+| `L1_foglia` | `p03` | 27.019 | 0.8323 | 2.952 |
+| `L2_fiori` | `p03` | 28.356 | 0.8832 | 3.090 |
+| `L2_roccia` | `p03` | 22.162 | 0.7431 | 5.480 |
+| `L2_tramonto_lago` | `p03` | 25.677 | 0.8824 | 2.542 |
+| `L2_tramonto_mare` | `p03` | 26.421 | 0.8164 | 2.547 |
+| `L3_ragazzi` | `p02` | 26.486 | 0.8240 | 3.901 |
+| `L4_bracciali` | `p03` | 22.874 | 0.7631 | 4.926 |
+| `L4_citta` | `p02` | 25.738 | 0.8130 | 4.122 |
 
 La lettura qualitativa dei casi è diversa: `L1_foglia` è il caso semplice,
 `L2_fiori` e i tramonti mostrano trasformazioni cromatiche coerenti,
@@ -592,15 +592,15 @@ Nel caso `L1_foglia / p02_teal_orange`, il vantaggio dell'interpolazione
 trilineare è visibile sul gambo e sulle venature: `nearest` introduce bordi
 scalettati e piccoli salti cromatici, mentre `trilinear` mantiene una
 transizione più continua. Tra le varianti `17^3` mostrate, la migliore è
-`weighted_mean_trilinear` con Delta E medio `6.015`; `weighted_mean_nearest`
-sale a `6.264` e mostra una definizione meno pulita del gambo. Il dato numerico
+`weighted_mean_trilinear` con Delta E medio `4.093`; `weighted_mean_nearest`
+sale a `4.256` e mostra una definizione meno pulita del gambo. Il dato numerico
 non è enorme, ma la differenza visiva è chiara.
 
 ![Confronto tra metodi LUT su `L1_foglia / p02_teal_orange`. L'interpolazione `trilinear` conserva meglio la continuità del gambo e riduce le discontinuità visibili rispetto a `nearest`.](images_lut/L1_foglia/p02_teal_orange/summary.png){ width=92% }
 
 `L2_fiori / p02_teal_orange` mostra invece un caso in cui la lettura visiva può
 divergere dalla metrica del crop. Nel confronto `17^3`, la variante evidenziata
-dalla figura è `median_nearest`, con Delta E medio `7.48`, ma la resa visiva
+dalla figura è `median_nearest`, con Delta E medio `4.709`, ma la resa visiva
 presenta posterizzazione e bordi cromatici più evidenti. Le versioni
 trilineari appaiono più continue sui petali e sulle foglie, anche quando non
 sono le migliori nel singolo valore medio mostrato dal crop. Questo conferma
@@ -610,10 +610,10 @@ che le metriche aiutano a ordinare, ma non sostituiscono l'ispezione visiva.
 
 Nel caso `L2_roccia / p03_cold_winter_grade`, la differenza principale è tra
 ricostruzioni rumorose e ricostruzioni più lisce. Sul crop `17^3`,
-`median_trilinear` ottiene il Delta E medio più basso (`10.593`), ma la lettura
+`median_trilinear` ottiene il Delta E medio più basso (`6.159`), ma la lettura
 complessiva del caso conferma il vantaggio delle varianti pesate e trilineari
 quando la griglia è più fine: nella valutazione completa la migliore variante
-è `65^3 weighted_mean trilinear`, con Delta E medio `9.525`. La roccia resta
+è `65^3 weighted_mean trilinear`, con Delta E medio `5.480`. La roccia resta
 difficile perché il target contiene molte variazioni locali della texture.
 
 ![Confronto tra metodi LUT su `L2_roccia / p03_cold_winter_grade`. Le varianti `nearest` amplificano rumore e discontinuità sulla texture; l'interpolazione trilineare produce una superficie più leggibile.](images_lut/L2_roccia/p03_cold_winter_grade/summary.png){ width=92% }
@@ -656,29 +656,29 @@ restano accettabili.
 ## Casi limite
 
 I casi limite sono scelti con due criteri: metriche peggiori e valore
-interpretativo della figura. Il peggior caso per PSNR, SSIM e Delta E medio è
-`L4_citta / p03_cold_winter_grade`. Il peggior Delta E p95 è invece
-`L2_roccia / p01_warm_cinematic`, dove texture naturale e variazioni locali
-producono errori molto concentrati. `L4_bracciali` e `L4_citta` sono comunque i
-casi più utili per mostrare il limite strutturale della LUT globale: materiali,
-dettagli, insegne, vetri, riflessi e ombre possono essere trattati da FLUX in
-modo localmente diverso. Una LUT globale non può distinguere due pixel con RGB
-simile ma contenuto diverso.
+interpretativo della figura. Il peggior caso per PSNR, Delta E medio e Delta E
+p95 è `L4_citta / p03_cold_winter_grade`. Il valore SSIM più basso tra le
+migliori varianti si trova invece in `L2_tramonto_lago / p04_faded_matte`, dove
+la trasformazione matte altera fortemente contrasto e struttura locale pur
+restando cromaticamente interpretabile. `L4_bracciali` e `L4_citta` sono
+comunque i casi più utili per mostrare il limite strutturale della LUT globale:
+materiali, dettagli, insegne, vetri, riflessi e ombre possono essere trattati
+da FLUX in modo localmente diverso. Una LUT globale non può distinguere due
+pixel con RGB simile ma contenuto diverso.
 
 ![Caso con materiali e dettagli minuti: `L4_bracciali / p02_teal_orange`. Gli errori si concentrano su riflessi, bordi e piccoli oggetti.](images_lut/L4_bracciali/p02_teal_orange/best_summary.png){ width=100% }
 
 `L2_roccia / p01_warm_cinematic` è istruttivo per un motivo diverso: non è
 una scena semanticamente complessa come la città, ma la texture naturale della
-roccia produce errori locali molto marcati. È il caso peggiore per Delta E p95
-tra le migliori varianti, con valore `36.610`, e mostra che anche una scena
-senza persone o oggetti urbani può essere difficile quando il target introduce
-variazioni locali non uniformi.
+roccia produce errori locali marcati. La migliore variante ha Delta E p95
+`23.282`, e mostra che anche una scena senza persone o oggetti urbani può
+essere difficile quando il target introduce variazioni locali non uniformi.
 
 ![Caso limite su texture naturale: `L2_roccia / p01_warm_cinematic`. La metrica Delta E p95 evidenzia errori localizzati sulle variazioni fini della superficie.](images_lut/L2_roccia/p01_warm_cinematic/best_summary.png){ width=100% }
 
 Il fallimento più istruttivo è `L4_citta / p03_cold_winter_grade`: anche la
-migliore variante ha PSNR `18.279`, SSIM `0.9084`, Delta E medio `12.163` e
-Delta E p95 `33.863`. La heatmap mostra errori su insegne, bordi, finestre,
+migliore variante ha PSNR `18.279`, SSIM `0.6929`, Delta E medio `8.610` e
+Delta E p95 `25.493`. La heatmap mostra errori su insegne, bordi, finestre,
 persone e regioni urbane dense. Il problema non è solo la precisione della LUT:
 il target diffusion contiene modifiche locali e semantiche.
 
@@ -700,8 +700,9 @@ diverso colori simili appartenenti a cielo, pelle, muro, insegna, vestito o
 riflesso.
 
 Le metriche sono coerenti con questa interpretazione, ma non bastano da sole.
-PSNR e SSIM favoriscono fedeltà pixel-per-pixel e struttura luminosa; Delta E
-misura meglio l'errore cromatico; le heatmap mostrano dove l'errore si concentra.
+PSNR e SSIM favoriscono fedeltà pixel-per-pixel e somiglianza strutturale;
+Delta E CIEDE2000 misura meglio l'errore cromatico; le heatmap mostrano dove
+l'errore si concentra.
 Il valore dell'esperimento sta proprio nell'usare insieme queste informazioni:
 le metriche ordinano i casi, le figure spiegano perché la LUT funziona o
 fallisce.
@@ -714,7 +715,8 @@ Il lavoro ha alcuni limiti importanti:
 - il fitting assume corrispondenza pixel-per-pixel tra originale e target;
 - se FLUX cambia la struttura della scena, il confronto diventa meno
   interpretabile;
-- la SSIM usata è una misura su luminanza, non un giudizio percettivo completo;
+- la SSIM standard resta una metrica strutturale, non un giudizio percettivo
+  completo;
 - il dataset è piccolo e pensato come studio sperimentale, non come benchmark
   esaustivo;
 - i risultati dipendono dal modello locale, dai prompt e dal seed;

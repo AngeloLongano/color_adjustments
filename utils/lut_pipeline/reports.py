@@ -26,6 +26,8 @@ def _read_summary(path: Path) -> pd.DataFrame:
         summary["best_summary_path"] = summary["summary_path"].apply(
             lambda path: str(Path(path).with_name("best_summary.png"))
         )
+    if "ssim" not in summary.columns and "luma_ssim" in summary.columns:
+        summary["ssim"] = summary["luma_ssim"]
     return summary
 
 
@@ -41,7 +43,7 @@ def write_lut_rankings(summary_path: Path, output_dir: Path) -> None:
         "apply_method",
         "lut_size",
         "rgb_psnr",
-        "luma_ssim",
+        "ssim",
         "delta_e_mean",
         "delta_e_p95",
         "occupied_ratio",
@@ -65,14 +67,14 @@ def write_lut_rankings(summary_path: Path, output_dir: Path) -> None:
     )
     by_variant = (
         summary.groupby(["lut_size", "fit_method", "apply_method"])[
-            ["rgb_psnr", "luma_ssim", "delta_e_mean", "delta_e_p95", "occupied_ratio"]
+            ["rgb_psnr", "ssim", "delta_e_mean", "delta_e_p95", "occupied_ratio"]
         ]
         .mean()
         .reset_index()
     )
     by_lut_size = (
         summary.groupby("lut_size")[
-            ["rgb_psnr", "luma_ssim", "delta_e_mean", "delta_e_p95", "occupied_ratio"]
+            ["rgb_psnr", "ssim", "delta_e_mean", "delta_e_p95", "occupied_ratio"]
         ]
         .mean()
         .reset_index()
@@ -192,7 +194,7 @@ def generate_case_summaries(summary_path: Path) -> None:
             metrics = {
                 "rgb_mae": row["rgb_mae"],
                 "rgb_psnr": row["rgb_psnr"],
-                "luma_ssim": row["luma_ssim"],
+                "ssim": row["ssim"],
                 "delta_e_mean": row["delta_e_mean"],
                 "delta_e_p95": row["delta_e_p95"],
                 "occupied_ratio": row["occupied_ratio"],

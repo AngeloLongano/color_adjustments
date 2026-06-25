@@ -19,7 +19,7 @@ header-includes:
 
 Appendice visiva generata automaticamente dagli asset della pipeline. Le immagini sono inserite una per blocco, senza crop e con aspect ratio preservato.
 
-Data generazione: 2026-06-24
+Data generazione: 2026-06-25
 
 \clearpage
 
@@ -589,16 +589,16 @@ Dimensioni: 1008x672px
 {\Huge\bfseries Risultati LUT}
 \vspace{0.8cm}
 
-{\Large Per ogni target viene mostrata la migliore ricostruzione LUT selezionata per Delta E medio.}
+{\Large Per ogni target viene mostrata la migliore ricostruzione LUT selezionata per Delta E CIEDE2000 medio.}
 \vspace{0.9cm}
 
 \textcolor[HTML]{2563EB}{\rule{0.52\textwidth}{1.1pt}}
 \end{center}
 \clearpage
 
-# Risultati LUT: migliore ricostruzione per Delta E medio
+# Risultati LUT: migliore ricostruzione per Delta E CIEDE2000 medio
 
-Questa sezione mette in evidenza il risultato principale del fitting: per ogni target FLUX viene mostrata la variante LUT migliore secondo il Delta E medio.
+Questa sezione mette in evidenza il risultato principale del fitting: per ogni target FLUX viene mostrata la variante LUT migliore secondo il Delta E CIEDE2000 medio.
 
 ## L1_foglia / p01_warm_cinematic
 
@@ -607,7 +607,7 @@ Questa sezione mette in evidenza il risultato principale del fitting: per ogni t
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_median\_trilinear} $(LUT=65^3, fit=median, apply=trilinear)$\\
-PSNR RGB: \textbf{26.312} \quad SSIM luminanza: \textbf{0.974} \quad Delta E medio: \textbf{6.319} \quad Delta E p95: \textbf{18.870}
+PSNR RGB: \textbf{26.312} \quad SSIM: \textbf{0.834} \quad Delta E medio: \textbf{4.096} \quad Delta E p95: \textbf{12.133}
 \end{minipage}}
 \end{center}
 
@@ -625,7 +625,7 @@ PSNR RGB: \textbf{26.312} \quad SSIM luminanza: \textbf{0.974} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{27.181} \quad SSIM luminanza: \textbf{0.970} \quad Delta E medio: \textbf{5.451} \quad Delta E p95: \textbf{14.669}
+PSNR RGB: \textbf{27.181} \quad SSIM: \textbf{0.875} \quad Delta E medio: \textbf{3.708} \quad Delta E p95: \textbf{9.957}
 \end{minipage}}
 \end{center}
 
@@ -643,7 +643,7 @@ PSNR RGB: \textbf{27.181} \quad SSIM luminanza: \textbf{0.970} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{27.019} \quad SSIM luminanza: \textbf{0.972} \quad Delta E medio: \textbf{5.297} \quad Delta E p95: \textbf{13.993}
+PSNR RGB: \textbf{27.019} \quad SSIM: \textbf{0.832} \quad Delta E medio: \textbf{2.952} \quad Delta E p95: \textbf{8.369}
 \end{minipage}}
 \end{center}
 
@@ -661,7 +661,7 @@ PSNR RGB: \textbf{27.019} \quad SSIM luminanza: \textbf{0.972} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{24.612} \quad SSIM luminanza: \textbf{0.975} \quad Delta E medio: \textbf{7.836} \quad Delta E p95: \textbf{17.801}
+PSNR RGB: \textbf{24.612} \quad SSIM: \textbf{0.564} \quad Delta E medio: \textbf{5.240} \quad Delta E p95: \textbf{12.519}
 \end{minipage}}
 \end{center}
 
@@ -679,7 +679,7 @@ PSNR RGB: \textbf{24.612} \quad SSIM luminanza: \textbf{0.975} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{27.973} \quad SSIM luminanza: \textbf{0.994} \quad Delta E medio: \textbf{5.480} \quad Delta E p95: \textbf{15.933}
+PSNR RGB: \textbf{27.973} \quad SSIM: \textbf{0.868} \quad Delta E medio: \textbf{3.482} \quad Delta E p95: \textbf{9.931}
 \end{minipage}}
 \end{center}
 
@@ -697,7 +697,7 @@ PSNR RGB: \textbf{27.973} \quad SSIM luminanza: \textbf{0.994} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{24.870} \quad SSIM luminanza: \textbf{0.991} \quad Delta E medio: \textbf{6.075} \quad Delta E p95: \textbf{19.120}
+PSNR RGB: \textbf{24.870} \quad SSIM: \textbf{0.841} \quad Delta E medio: \textbf{3.828} \quad Delta E p95: \textbf{11.733}
 \end{minipage}}
 \end{center}
 
@@ -715,7 +715,7 @@ PSNR RGB: \textbf{24.870} \quad SSIM luminanza: \textbf{0.991} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{28.356} \quad SSIM luminanza: \textbf{0.992} \quad Delta E medio: \textbf{5.584} \quad Delta E p95: \textbf{16.709}
+PSNR RGB: \textbf{28.356} \quad SSIM: \textbf{0.883} \quad Delta E medio: \textbf{3.090} \quad Delta E p95: \textbf{9.067}
 \end{minipage}}
 \end{center}
 
@@ -733,7 +733,7 @@ PSNR RGB: \textbf{28.356} \quad SSIM luminanza: \textbf{0.992} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{26.469} \quad SSIM luminanza: \textbf{0.990} \quad Delta E medio: \textbf{6.133} \quad Delta E p95: \textbf{16.319}
+PSNR RGB: \textbf{26.469} \quad SSIM: \textbf{0.682} \quad Delta E medio: \textbf{4.275} \quad Delta E p95: \textbf{10.911}
 \end{minipage}}
 \end{center}
 
@@ -751,7 +751,7 @@ PSNR RGB: \textbf{26.469} \quad SSIM luminanza: \textbf{0.990} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_median\_trilinear} $(LUT=65^3, fit=median, apply=trilinear)$\\
-PSNR RGB: \textbf{20.388} \quad SSIM luminanza: \textbf{0.951} \quad Delta E medio: \textbf{11.163} \quad Delta E p95: \textbf{36.610}
+PSNR RGB: \textbf{20.388} \quad SSIM: \textbf{0.689} \quad Delta E medio: \textbf{7.116} \quad Delta E p95: \textbf{23.282}
 \end{minipage}}
 \end{center}
 
@@ -769,7 +769,7 @@ PSNR RGB: \textbf{20.388} \quad SSIM luminanza: \textbf{0.951} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{25.873} \quad SSIM luminanza: \textbf{0.988} \quad Delta E medio: \textbf{7.870} \quad Delta E p95: \textbf{24.861}
+PSNR RGB: \textbf{25.873} \quad SSIM: \textbf{0.720} \quad Delta E medio: \textbf{5.796} \quad Delta E p95: \textbf{19.137}
 \end{minipage}}
 \end{center}
 
@@ -787,7 +787,7 @@ PSNR RGB: \textbf{25.873} \quad SSIM luminanza: \textbf{0.988} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{22.162} \quad SSIM luminanza: \textbf{0.948} \quad Delta E medio: \textbf{9.525} \quad Delta E p95: \textbf{25.415}
+PSNR RGB: \textbf{22.162} \quad SSIM: \textbf{0.743} \quad Delta E medio: \textbf{5.480} \quad Delta E p95: \textbf{15.563}
 \end{minipage}}
 \end{center}
 
@@ -805,7 +805,7 @@ PSNR RGB: \textbf{22.162} \quad SSIM luminanza: \textbf{0.948} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{23.203} \quad SSIM luminanza: \textbf{0.971} \quad Delta E medio: \textbf{8.913} \quad Delta E p95: \textbf{24.307}
+PSNR RGB: \textbf{23.203} \quad SSIM: \textbf{0.674} \quad Delta E medio: \textbf{6.338} \quad Delta E p95: \textbf{17.557}
 \end{minipage}}
 \end{center}
 
@@ -822,13 +822,13 @@ PSNR RGB: \textbf{23.203} \quad SSIM luminanza: \textbf{0.971} \quad Delta E med
 \setlength{\fboxsep}{8pt}
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
-Variante migliore: \texttt{lut\_65\_median\_nearest} $(LUT=65^3, fit=median, apply=nearest)$\\
-PSNR RGB: \textbf{21.087} \quad SSIM luminanza: \textbf{0.957} \quad Delta E medio: \textbf{6.889} \quad Delta E p95: \textbf{28.995}
+Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
+PSNR RGB: \textbf{21.981} \quad SSIM: \textbf{0.827} \quad Delta E medio: \textbf{4.562} \quad Delta E p95: \textbf{16.600}
 \end{minipage}}
 \end{center}
 
 \begin{center}
-\includegraphics[width=0.98\textwidth,height=0.62\textheight,keepaspectratio]{images_lut/L2_tramonto_lago/p01_warm_cinematic/lut_65_median_nearest_reconstruction.png}\\[2pt]
+\includegraphics[width=0.98\textwidth,height=0.62\textheight,keepaspectratio]{images_lut/L2_tramonto_lago/p01_warm_cinematic/lut_65_weighted_mean_trilinear_reconstruction.png}\\[2pt]
 {\small Ricostruzione LUT best - L2\_tramonto\_lago / p01\_warm\_cinematic}
 \end{center}
 
@@ -841,7 +841,7 @@ PSNR RGB: \textbf{21.087} \quad SSIM luminanza: \textbf{0.957} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{24.069} \quad SSIM luminanza: \textbf{0.962} \quad Delta E medio: \textbf{5.281} \quad Delta E p95: \textbf{18.814}
+PSNR RGB: \textbf{24.069} \quad SSIM: \textbf{0.857} \quad Delta E medio: \textbf{3.543} \quad Delta E p95: \textbf{12.433}
 \end{minipage}}
 \end{center}
 
@@ -859,7 +859,7 @@ PSNR RGB: \textbf{24.069} \quad SSIM luminanza: \textbf{0.962} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{25.677} \quad SSIM luminanza: \textbf{0.957} \quad Delta E medio: \textbf{3.851} \quad Delta E p95: \textbf{14.689}
+PSNR RGB: \textbf{25.677} \quad SSIM: \textbf{0.882} \quad Delta E medio: \textbf{2.542} \quad Delta E p95: \textbf{9.331}
 \end{minipage}}
 \end{center}
 
@@ -877,7 +877,7 @@ PSNR RGB: \textbf{25.677} \quad SSIM luminanza: \textbf{0.957} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{22.698} \quad SSIM luminanza: \textbf{0.971} \quad Delta E medio: \textbf{7.703} \quad Delta E p95: \textbf{18.722}
+PSNR RGB: \textbf{22.698} \quad SSIM: \textbf{0.492} \quad Delta E medio: \textbf{5.962} \quad Delta E p95: \textbf{14.340}
 \end{minipage}}
 \end{center}
 
@@ -895,7 +895,7 @@ PSNR RGB: \textbf{22.698} \quad SSIM luminanza: \textbf{0.971} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{23.281} \quad SSIM luminanza: \textbf{0.964} \quad Delta E medio: \textbf{9.339} \quad Delta E p95: \textbf{24.701}
+PSNR RGB: \textbf{23.281} \quad SSIM: \textbf{0.739} \quad Delta E medio: \textbf{6.173} \quad Delta E p95: \textbf{16.498}
 \end{minipage}}
 \end{center}
 
@@ -913,7 +913,7 @@ PSNR RGB: \textbf{23.281} \quad SSIM luminanza: \textbf{0.964} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{25.123} \quad SSIM luminanza: \textbf{0.979} \quad Delta E medio: \textbf{7.405} \quad Delta E p95: \textbf{22.239}
+PSNR RGB: \textbf{25.123} \quad SSIM: \textbf{0.775} \quad Delta E medio: \textbf{4.842} \quad Delta E p95: \textbf{14.701}
 \end{minipage}}
 \end{center}
 
@@ -931,7 +931,7 @@ PSNR RGB: \textbf{25.123} \quad SSIM luminanza: \textbf{0.979} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{26.421} \quad SSIM luminanza: \textbf{0.976} \quad Delta E medio: \textbf{4.862} \quad Delta E p95: \textbf{15.154}
+PSNR RGB: \textbf{26.421} \quad SSIM: \textbf{0.816} \quad Delta E medio: \textbf{2.547} \quad Delta E p95: \textbf{8.403}
 \end{minipage}}
 \end{center}
 
@@ -949,7 +949,7 @@ PSNR RGB: \textbf{26.421} \quad SSIM luminanza: \textbf{0.976} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{23.521} \quad SSIM luminanza: \textbf{0.960} \quad Delta E medio: \textbf{6.784} \quad Delta E p95: \textbf{18.047}
+PSNR RGB: \textbf{23.521} \quad SSIM: \textbf{0.687} \quad Delta E medio: \textbf{4.834} \quad Delta E p95: \textbf{13.854}
 \end{minipage}}
 \end{center}
 
@@ -966,13 +966,13 @@ PSNR RGB: \textbf{23.521} \quad SSIM luminanza: \textbf{0.960} \quad Delta E med
 \setlength{\fboxsep}{8pt}
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
-Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{26.840} \quad SSIM luminanza: \textbf{0.990} \quad Delta E medio: \textbf{5.574} \quad Delta E p95: \textbf{17.836}
+Variante migliore: \texttt{lut\_65\_median\_trilinear} $(LUT=65^3, fit=median, apply=trilinear)$\\
+PSNR RGB: \textbf{26.529} \quad SSIM: \textbf{0.855} \quad Delta E medio: \textbf{3.925} \quad Delta E p95: \textbf{12.551}
 \end{minipage}}
 \end{center}
 
 \begin{center}
-\includegraphics[width=0.98\textwidth,height=0.62\textheight,keepaspectratio]{images_lut/L3_ragazzi/p01_warm_cinematic/lut_65_weighted_mean_trilinear_reconstruction.png}\\[2pt]
+\includegraphics[width=0.98\textwidth,height=0.62\textheight,keepaspectratio]{images_lut/L3_ragazzi/p01_warm_cinematic/lut_65_median_trilinear_reconstruction.png}\\[2pt]
 {\small Ricostruzione LUT best - L3\_ragazzi / p01\_warm\_cinematic}
 \end{center}
 
@@ -985,7 +985,7 @@ PSNR RGB: \textbf{26.840} \quad SSIM luminanza: \textbf{0.990} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{26.486} \quad SSIM luminanza: \textbf{0.990} \quad Delta E medio: \textbf{6.185} \quad Delta E p95: \textbf{22.272}
+PSNR RGB: \textbf{26.486} \quad SSIM: \textbf{0.824} \quad Delta E medio: \textbf{3.901} \quad Delta E p95: \textbf{13.913}
 \end{minipage}}
 \end{center}
 
@@ -1003,7 +1003,7 @@ PSNR RGB: \textbf{26.486} \quad SSIM luminanza: \textbf{0.990} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{24.447} \quad SSIM luminanza: \textbf{0.984} \quad Delta E medio: \textbf{6.819} \quad Delta E p95: \textbf{22.521}
+PSNR RGB: \textbf{24.447} \quad SSIM: \textbf{0.863} \quad Delta E medio: \textbf{4.210} \quad Delta E p95: \textbf{14.238}
 \end{minipage}}
 \end{center}
 
@@ -1021,7 +1021,7 @@ PSNR RGB: \textbf{24.447} \quad SSIM luminanza: \textbf{0.984} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{23.375} \quad SSIM luminanza: \textbf{0.978} \quad Delta E medio: \textbf{7.971} \quad Delta E p95: \textbf{21.942}
+PSNR RGB: \textbf{23.375} \quad SSIM: \textbf{0.665} \quad Delta E medio: \textbf{5.687} \quad Delta E p95: \textbf{15.429}
 \end{minipage}}
 \end{center}
 
@@ -1039,7 +1039,7 @@ PSNR RGB: \textbf{23.375} \quad SSIM luminanza: \textbf{0.978} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{22.550} \quad SSIM luminanza: \textbf{0.968} \quad Delta E medio: \textbf{9.258} \quad Delta E p95: \textbf{30.293}
+PSNR RGB: \textbf{22.550} \quad SSIM: \textbf{0.803} \quad Delta E medio: \textbf{5.690} \quad Delta E p95: \textbf{17.875}
 \end{minipage}}
 \end{center}
 
@@ -1057,7 +1057,7 @@ PSNR RGB: \textbf{22.550} \quad SSIM luminanza: \textbf{0.968} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{23.360} \quad SSIM luminanza: \textbf{0.945} \quad Delta E medio: \textbf{7.684} \quad Delta E p95: \textbf{26.059}
+PSNR RGB: \textbf{23.360} \quad SSIM: \textbf{0.769} \quad Delta E medio: \textbf{5.676} \quad Delta E p95: \textbf{18.678}
 \end{minipage}}
 \end{center}
 
@@ -1075,7 +1075,7 @@ PSNR RGB: \textbf{23.360} \quad SSIM luminanza: \textbf{0.945} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{22.874} \quad SSIM luminanza: \textbf{0.940} \quad Delta E medio: \textbf{9.821} \quad Delta E p95: \textbf{27.014}
+PSNR RGB: \textbf{22.874} \quad SSIM: \textbf{0.763} \quad Delta E medio: \textbf{4.926} \quad Delta E p95: \textbf{13.995}
 \end{minipage}}
 \end{center}
 
@@ -1093,7 +1093,7 @@ PSNR RGB: \textbf{22.874} \quad SSIM luminanza: \textbf{0.940} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{22.795} \quad SSIM luminanza: \textbf{0.967} \quad Delta E medio: \textbf{8.343} \quad Delta E p95: \textbf{22.464}
+PSNR RGB: \textbf{22.795} \quad SSIM: \textbf{0.721} \quad Delta E medio: \textbf{5.994} \quad Delta E p95: \textbf{16.466}
 \end{minipage}}
 \end{center}
 
@@ -1110,13 +1110,13 @@ PSNR RGB: \textbf{22.795} \quad SSIM luminanza: \textbf{0.967} \quad Delta E med
 \setlength{\fboxsep}{8pt}
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
-Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{22.141} \quad SSIM luminanza: \textbf{0.968} \quad Delta E medio: \textbf{8.157} \quad Delta E p95: \textbf{27.783}
+Variante migliore: \texttt{lut\_65\_median\_trilinear} $(LUT=65^3, fit=median, apply=trilinear)$\\
+PSNR RGB: \textbf{21.948} \quad SSIM: \textbf{0.822} \quad Delta E medio: \textbf{5.705} \quad Delta E p95: \textbf{19.182}
 \end{minipage}}
 \end{center}
 
 \begin{center}
-\includegraphics[width=0.98\textwidth,height=0.62\textheight,keepaspectratio]{images_lut/L4_citta/p01_warm_cinematic/lut_65_weighted_mean_trilinear_reconstruction.png}\\[2pt]
+\includegraphics[width=0.98\textwidth,height=0.62\textheight,keepaspectratio]{images_lut/L4_citta/p01_warm_cinematic/lut_65_median_trilinear_reconstruction.png}\\[2pt]
 {\small Ricostruzione LUT best - L4\_citta / p01\_warm\_cinematic}
 \end{center}
 
@@ -1129,7 +1129,7 @@ PSNR RGB: \textbf{22.141} \quad SSIM luminanza: \textbf{0.968} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{25.738} \quad SSIM luminanza: \textbf{0.985} \quad Delta E medio: \textbf{5.890} \quad Delta E p95: \textbf{19.582}
+PSNR RGB: \textbf{25.738} \quad SSIM: \textbf{0.813} \quad Delta E medio: \textbf{4.122} \quad Delta E p95: \textbf{13.422}
 \end{minipage}}
 \end{center}
 
@@ -1147,7 +1147,7 @@ PSNR RGB: \textbf{25.738} \quad SSIM luminanza: \textbf{0.985} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_median\_trilinear} $(LUT=65^3, fit=median, apply=trilinear)$\\
-PSNR RGB: \textbf{18.279} \quad SSIM luminanza: \textbf{0.908} \quad Delta E medio: \textbf{12.163} \quad Delta E p95: \textbf{33.863}
+PSNR RGB: \textbf{18.279} \quad SSIM: \textbf{0.693} \quad Delta E medio: \textbf{8.610} \quad Delta E p95: \textbf{25.493}
 \end{minipage}}
 \end{center}
 
@@ -1165,7 +1165,7 @@ PSNR RGB: \textbf{18.279} \quad SSIM luminanza: \textbf{0.908} \quad Delta E med
 \fbox{\begin{minipage}{0.88\textwidth}
 \textbf{Risultato ottenuto}\\[3pt]
 Variante migliore: \texttt{lut\_65\_weighted\_mean\_trilinear} $(LUT=65^3, fit=weighted\_mean, apply=trilinear)$\\
-PSNR RGB: \textbf{23.718} \quad SSIM luminanza: \textbf{0.974} \quad Delta E medio: \textbf{7.027} \quad Delta E p95: \textbf{17.358}
+PSNR RGB: \textbf{23.718} \quad SSIM: \textbf{0.850} \quad Delta E medio: \textbf{5.545} \quad Delta E p95: \textbf{14.198}
 \end{minipage}}
 \end{center}
 

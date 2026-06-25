@@ -68,7 +68,7 @@ def write_catalog_markdown(
             "Risultati LUT",
             (
                 "Per ogni target viene mostrata la migliore ricostruzione LUT "
-                "selezionata per Delta E medio."
+                "selezionata per Delta E CIEDE2000 medio."
             ),
         )
     )
@@ -235,12 +235,12 @@ def _flux_section(
 
 def _best_lut_section(rows: Iterable[dict[str, str]]) -> list[str]:
     lines = [
-        "# Risultati LUT: migliore ricostruzione per Delta E medio",
+        "# Risultati LUT: migliore ricostruzione per Delta E CIEDE2000 medio",
         "",
         (
             "Questa sezione mette in evidenza il risultato principale del "
             "fitting: per ogni target FLUX viene mostrata la variante LUT "
-            "migliore secondo il Delta E medio."
+            "migliore secondo il Delta E CIEDE2000 medio."
         ),
         "",
     ]
@@ -284,7 +284,7 @@ def _metrics_line(row: dict[str, str]) -> str:
     return (
         f"Best: `{row.get('variant', 'n/a')}`; "
         f"PSNR RGB: {_fmt(row.get('rgb_psnr'))}; "
-        f"SSIM luminanza: {_fmt(row.get('luma_ssim'))}; "
+        f"SSIM: {_fmt(row.get('ssim', row.get('luma_ssim')))}; "
         f"Delta E medio: {_fmt(row.get('delta_e_mean'))}; "
         f"Delta E p95: {_fmt(row.get('delta_e_p95'))}."
     )
@@ -305,7 +305,7 @@ def _result_box(row: dict[str, str]) -> str:
             f"$(LUT={lut_size}^3, fit={fit_method}, apply={apply_method})$\\\\",
             (
                 f"PSNR RGB: \\textbf{{{_fmt(row.get('rgb_psnr'))}}} \\quad "
-                f"SSIM luminanza: \\textbf{{{_fmt(row.get('luma_ssim'))}}} \\quad "
+                f"SSIM: \\textbf{{{_fmt(row.get('ssim', row.get('luma_ssim')))}}} \\quad "
                 f"Delta E medio: \\textbf{{{_fmt(row.get('delta_e_mean'))}}} \\quad "
                 f"Delta E p95: \\textbf{{{_fmt(row.get('delta_e_p95'))}}}"
             ),

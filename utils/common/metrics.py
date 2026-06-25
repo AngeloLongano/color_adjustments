@@ -1,9 +1,21 @@
 import math
 
 import numpy as np
+from skimage.color import deltaE_ciede2000, rgb2lab
+from skimage.metrics import structural_similarity
 
 
-def rgb_to_luma(arr: np.ndarray) -> np.ndarray:
+def ensure_float01(arr: np.ndarray) -> np.ndarray:
+    arr = arr.astype(np.float64, copy=False)
+    if arr.size and np.nanmax(arr) > 1.5:
+        arr = arr / 255.0
+    return np.clip(arr, 0.0, 1.0)
+
+
+def rgb_to_luma(arr: np.ndarray, linearize: bool = False) -> np.ndarray:
+    arr = ensure_float01(arr)
+    if linearize:
+        arr = srgb_to_linear(arr)
     return 0.2126 * arr[..., 0] + 0.7152 * arr[..., 1] + 0.0722 * arr[..., 2]
 
 
@@ -23,59 +35,36 @@ def pearson_corr(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.dot(av, bv) / denom)
 
 
-def simple_ssim(a: np.ndarray, b: np.ndarray) -> float:
-    a = a.astype(np.float64)
-    b = b.astype(np.float64)
-    c1 = 0.01**2
-    c2 = 0.03**2
-    mu_a = a.mean()
-    mu_b = b.mean()
-    var_a = a.var()
-    var_b = b.var()
-    cov = ((a - mu_a) * (b - mu_b)).mean()
-    numerator = (2 * mu_a * mu_b + c1) * (2 * cov + c2)
-    denominator = (mu_a * mu_a + mu_b * mu_b + c1) * (var_a + var_b + c2)
-    if denominator == 0:
-        return 1.0
-    return float(numerator / denominator)
+def ssim_metric(a: np.ndarray, b: np.ndarray) -> float:
+    a = ensure_float01(a)
+    b = ensure_float01(b)
+    if a.shape != b.shape:
+        raise ValueError(f"SSIM requires equal shapes, got {a.shape} and {b.shape}")
+    channel_axis = -1 if a.ndim == 3 and a.shape[-1] in {3, 4} else None
+    return float(
+        structural_similarity(
+            a,
+            b,
+            data_range=1.0,
+            channel_axis=channel_axis,
+        )
+    )
 
 
 def srgb_to_linear(arr: np.ndarray) -> np.ndarray:
     return np.where(arr <= 0.04045, arr / 12.92, ((arr + 0.055) / 1.055) ** 2.4)
 
 
-def rgb_to_lab(arr: np.ndarray) -> np.ndarray:
-    rgb = srgb_to_linear(arr)
-    matrix = np.array(
-        [
-            [0.4124564, 0.3575761, 0.1804375],
-            [0.2126729, 0.7151522, 0.0721750],
-            [0.0193339, 0.1191920, 0.9503041],
-        ],
-        dtype=np.float32,
-    )
-    xyz = rgb @ matrix.T
-    white = np.array([0.95047, 1.0, 1.08883], dtype=np.float32)
-    xyz = xyz / white
-
-    epsilon = 216 / 24389
-    kappa = 24389 / 27
-    f = np.where(xyz > epsilon, np.cbrt(xyz), (kappa * xyz + 16) / 116)
-
-    lab = np.empty_like(xyz)
-    lab[..., 0] = 116 * f[..., 1] - 16
-    lab[..., 1] = 500 * (f[..., 0] - f[..., 1])
-    lab[..., 2] = 200 * (f[..., 1] - f[..., 2])
-    return lab
+def delta_e_2000(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    lab_a = rgb2lab(ensure_float01(a))
+    lab_b = rgb2lab(ensure_float01(b))
+    return deltaE_ciede2000(lab_a, lab_b)
 
 
-def delta_e_76(a: np.ndarray, b: np.ndarray) -> np.ndarray:
-    return np.linalg.norm(rgb_to_lab(a) - rgb_to_lab(b), axis=-1)
-
-
-def psnr(a: np.ndarray, b: np.ndarray) -> float:
+def psnr(a: np.ndarray, b: np.ndarray, data_range: float = 1.0) -> float:
+    a = a.astype(np.float64, copy=False)
+    b = b.astype(np.float64, copy=False)
     mse = float(np.mean((a - b) ** 2))
     if mse == 0:
         return math.inf
-    return 10 * math.log10(1.0 / mse)
-
+    return 10 * math.log10((data_range**2) / mse)

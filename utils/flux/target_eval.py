@@ -13,12 +13,12 @@ if str(ROOT) not in sys.path:
 from utils.flux.generate_targets import resolve_prepared_image
 from utils.common.image_io import load_rgb, read_config, read_json, resize_to
 from utils.common.metrics import (
-    delta_e_76,
+    delta_e_2000,
     gradient_magnitude,
     pearson_corr,
     psnr,
     rgb_to_luma,
-    simple_ssim,
+    ssim_metric,
 )
 
 
@@ -39,11 +39,11 @@ def find_original(generated_path: Path, metadata: dict, originals_dir: Path) -> 
 
 def decision_hint(
     edge_corr: float,
-    luma_ssim: float,
+    ssim: float,
     delta_e_mean: float,
     delta_e_p95: float,
 ) -> str:
-    if edge_corr < 0.70 or luma_ssim < 0.45:
+    if edge_corr < 0.70 or ssim < 0.45:
         return "check_content_change"
     if delta_e_mean < 4.0:
         return "weak_color_change"
@@ -63,11 +63,11 @@ def evaluate_pair(original_path: Path, generated_path: Path) -> dict:
     generated_luma = rgb_to_luma(generated)
     original_edges = gradient_magnitude(original_luma)
     generated_edges = gradient_magnitude(generated_luma)
-    delta_e = delta_e_76(original, generated)
+    delta_e = delta_e_2000(original, generated)
 
     rgb_abs = np.abs(original - generated)
     edge_corr = pearson_corr(original_edges, generated_edges)
-    luma_ssim = simple_ssim(original_luma, generated_luma)
+    ssim = ssim_metric(original, generated)
     delta_e_mean = float(delta_e.mean())
     delta_e_p95 = float(np.percentile(delta_e, 95))
 
@@ -75,13 +75,13 @@ def evaluate_pair(original_path: Path, generated_path: Path) -> dict:
         "width": width,
         "height": height,
         "edge_correlation": round(edge_corr, 4),
-        "luma_ssim": round(luma_ssim, 4),
+        "ssim": round(ssim, 4),
         "rgb_mae": round(float(rgb_abs.mean() * 255.0), 3),
         "rgb_psnr": round(psnr(original, generated), 3),
         "delta_e_mean": round(delta_e_mean, 3),
         "delta_e_median": round(float(np.median(delta_e)), 3),
         "delta_e_p95": round(delta_e_p95, 3),
-        "decision_hint": decision_hint(edge_corr, luma_ssim, delta_e_mean, delta_e_p95),
+        "decision_hint": decision_hint(edge_corr, ssim, delta_e_mean, delta_e_p95),
     }
 
 
@@ -195,7 +195,7 @@ def format_quality_cell(row: dict | None) -> str:
     return (
         f"{row['decision_hint']}\n"
         f"edge: {row['edge_correlation']}\n"
-        f"ssim: {row['luma_ssim']}\n"
+        f"ssim: {row['ssim']}\n"
         f"psnr: {row['rgb_psnr']} dB\n"
         f"mae: {row['rgb_mae']}\n"
         f"dE mean: {row['delta_e_mean']}\n"
@@ -300,7 +300,7 @@ def print_summary(rows: list[dict]) -> None:
             print(
                 f"- {row['image_id']} {row['generated_file']} "
                 f"edge={row['edge_correlation']} "
-                f"ssim={row['luma_ssim']} "
+                f"ssim={row['ssim']} "
                 f"dE={row['delta_e_mean']}"
             )
 
