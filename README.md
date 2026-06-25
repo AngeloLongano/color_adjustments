@@ -21,26 +21,26 @@ Per ogni immagine selezionata vengono generati quattro target image-to-image,
 uno per prompt di color grading. La griglia seguente mostra i target finali:
 righe per immagine, colonne per prompt.
 
-![Target FLUX finali](images_flux/target_grid.jpg)
+![Target FLUX finali](readme_assets/target_grid.jpg)
 
 Prima del fitting LUT i target vengono controllati rispetto agli originali, per
 capire se FLUX ha conservato abbastanza struttura e contenuto da rendere il caso
 interpretabile come color adjustment.
 
-![Controllo qualita' target image-to-image](images_flux/i2i_quality_targets_grid.jpg)
+![Controllo qualita' target image-to-image](readme_assets/i2i_quality_targets_grid.jpg)
 
 La fase LUT campiona coppie di pixel corrispondenti, stima piu' varianti di 3D
 LUT, applica la trasformazione all'originale e confronta target FLUX e
 ricostruzione. Questo caso semplice mostra una trasformazione fredda ben
 approssimata da una LUT globale.
 
-![Caso favorevole: L1_foglia / p03](images_lut/L1_foglia/p03_cold_winter_grade/best_summary.png)
+![Caso favorevole: L1_foglia / p03](readme_assets/L1_foglia_p03_best_summary.png)
 
 Nei casi semanticamente o strutturalmente piu' complessi, gli errori si
 concentrano su texture, riflessi, insegne, persone, bordi e dettagli locali:
 sono proprio le componenti che una LUT globale non puo' rappresentare.
 
-![Caso limite: L4_citta / p03](images_lut/L4_citta/p03_cold_winter_grade/best_summary.png)
+![Caso limite: L4_citta / p03](readme_assets/L4_citta_p03_best_summary.png)
 
 ## Pipeline
 
